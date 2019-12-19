@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>教室管理</title>
+		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
+		<link rel="stylesheet" href="../bower_components/angularjs/pagination.css">
+		
+		<!-- jQuery 3 -->
+		<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+		<!-- Bootstrap 3.3.7 -->
+		<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<!--angular.min.js-->
+		<script src="../bower_components/angularjs/angular.min.js"></script>
+		<script type="text/javascript" src="../bower_components/angularjs/pagination.js"></script><!--分页插件-->
+		
+		<script type="text/javascript">
+    	
+    	var app = angular.module("ClassroomApp",['pagination']);
+    	var URI = "http://localhost:8663/lesson/";
+    	var table = "classroom/";
+    	//定义一个状态码，0表示添加，1表示更新
+    	var status = 0;
+    	app.controller("ClassroomController",function($scope,$http){
+    		//标题，也是数据库中字段的中文名
+    		$scope.title = ['教室id', '位置', '座位数',   '备注'];
+    		
+    		//{"classroomId":"1","place":"A101","classroomNum":"40","remark":null}
+    		
+    		$scope.name = ['classroomId', 'place', 'classroomNum', 'remark'];
+    		
+    		//查询列表：存放从数据库中查询出的整个列表
+    		$scope.list = [{
+						    "classroomId": "11",
+						    "place": "A301",
+						    "classroomNum": "40",
+						    "remark": null
+						  },
+						  {
+						    "classroomId": "12",
+						    "place": "A302",
+						    "classroomNum": "40",
+						    "remark": null
+						  },
+						  {
+						    "classroomId": "13",
+						    "place": "A303",
+						    "classroomNum": "40",
+						    "remark": null
+						  }];
+    		
+    		$scope.findAll = function(){
+//  			alert("findAll");
+    			$http.get(URI + table +  "findAll").success(function(response){
+    				$scope.list = response;
+    			});
+    		}
+    		
+    		$scope.save = function(){
+    			console.log((status==1?"更新":"添加"));
+    			console.log($scope.entity);
+    			var op = "save";//默认为添加操作
+    			if(status==1){//如果状态为1，则为更新操作
+    				op = "update";
+    			}
+    			
+    			$http.post(URI + table + op ,$scope.entity).success(function(response){
+    				if(response){
+    					//成功操作之后，重新加载列表，然后把状态改为0，即默认是添加
+    					$scope.reloadList();
+    					status = 0;
+    				}else{
+    					alert("操作失败");
+    				}
+    			});
+    			
+    			
+    		}
+    		
+    		$scope.findOne = function(row){  //把整个对象传过去，根据部分信息查找单个
+    			//当点击修改时，根据id查找单个值，然后修改状态码为1，表示更新
+    			status = 1;
+    			console.log(row);
+    			console.log((status==1?"更新":"添加"));
+    			$http.post(URI + table + "findOne/" ,row).success(function(response){
+    				$scope.entity = response;
+    			});
+    		}
+    		
+    		$scope.changeStatusToAdd = function(){
+    			//点完修改之后，status变成1，如果取消修改，则把status变回0
+    			status = 0;
+    			console.log((status==1?"更新":"添加"));
+    		}
+    		
+    		
+    		$scope.paginationConf = {
+				currentPage : 1,
+				totalItems : 5,
+				itemsPerPage : 10,
+				perPageOptions : [5, 10, 20, 30, 40, 50 ],
+				onChange : function() {
+					$scope.reloadList();
+				}
+			};
+    		
+    		
+    		$scope.reloadList = function(){
+    			$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage);
+    		}
+    		
+    		$scope.findByPage = function(pageNo,pageSize){
+    			$http.get(URI + table + "findByPage?pageNo="+pageNo+"&pageSize="+pageSize).success(function(response){
+    				$scope.list = response.rows;
+    				$scope.paginationConf.totalItems = response.total;
+    			});
+    		}
+    		
+    		$scope.seletedIds = [];//存放被选中的Id
+    		$scope.selectUpdate = function(id,event){
+    			if(event.target.checked){
+    				console.log(id+"被选中...");
+    				//event是一个事件，当多选框被选中时或取消选中时发生的事件
+    				//event.target是发生事件的组件，即checkbox
+    				//event.target.checked是组件的checked属性，检查是否被选中
+    				$scope.seletedIds.push(id);
+    			}else{
+    				console.log(id+"取消选中...");
+    				var index = $scope.seletedIds.indexOf(id);
+    				$scope.seletedIds.splice(index,1);
+    			}
+    			console.log($scope.seletedIds);
+    		}
+    		
+    		$scope.delete = function(seletedIds){
+    			if(confirm("你确定要删除吗？")){
+	    			$http.get(URI + table + "deleteByIds?ids=" + $scope.seletedIds).success(function(response){
+	    				if(response){
+	    					$scope.reloadList();
+	    				}else{
+	    					alert("删除失败！")
+	    				}
+	    			});
+    			}
+ 
+    		}
+    		
+    		
+    	});
+    	
+    	
+    </script>
+		
+		
+	</head>
+	<body class="hold-transition skin-red sidebar-mini" ng-app="ClassroomApp" ng-controller="ClassroomController" ng-init="findAll()">
+		<div class="box-header with-border">
+			<h3 class="box-title">教室管理</h3>
+		</div>
+		
+		<div class="box-body">
+
+			
+			<div class="table-box">
+				<!--
+                	描述：工具栏
+                	有三个按钮：添加/删除/刷新
+                -->
+                <div class="pull-left">
+                	<div class="form-group form-inline">
+                		<div class="btn-group">
+                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" ng-click="entity={}">添加</button>
+	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除</button>
+	                		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">刷新</button>	
+                		</div>
+                	</div>
+                </div>
+                <!--工具栏-->
+                
+                
+                <!--
+                	作者：1521484428@qq.com
+                	时间：2019-10-15
+                	描述：数据表格
+                -->
+                <table class="table table-bordered table-striped table-hover	">
+                	<thead>
+                		<tr>
+							<th class="" style="padding-right:0px">
+	                              <input id="selall" type="checkbox" class="icheckbox_square-blue">
+	                          </th> 
+							<th ng-repeat="column in title">{{column}}</th>
+                			<th class="text-center">操作</th>
+                		</tr>
+                	</thead>
+                	
+                	<tbody>
+                		<tr ng-repeat="row in list"> <!--取出每一行记录-->
+                			<td><input  type="checkbox" ng-click="selectUpdate(row.classroomId,$event)"></td>
+                			<td>{{row.classroomId}}</td>
+                			<td>{{row.place}}</td>
+                			<td>{{row.classroomNum}}</td>
+                			<td>{{row.remark}}</td>
+                		  <td>
+		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">修改</button>                                           
+		                  </td>
+                		</tr>
+                	</tbody>
+                </table>
+                <!--数据表格-->
+                <tm-pagination conf="paginationConf"></tm-pagination>
+                
+			</div>
+			<!--table-box-->
+			
+		</div>
+		<!--box-body-->
+		
+		<!-- 模态框（Modal） -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
+		  	 aria-labelledby="myModalLabel" aria-hidden="true">
+			   <div class="modal-dialog">
+			      <div class="modal-content">
+			        <div class="modal-header">
+        		 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+        		 		<h4 class="modal-title" id="myModalLabel">教室管理</h4>
+        		 		<h3 id="myModalLabel">添加班级</h3>
+        		 	</div>
+        		 	<div class="modal-body">		
+						<table class="table table-bordered table-striped"  width="800px">
+					      	<!--<tr ng-repeat="stu in student">
+					      		<td ng-hide={{$first}}>{{stu}}</td>
+					      		<td ng-hide={{$first}}><input  class="form-control" placeholder="{{stu}}" ng-model="entity.{{}}" >  </td>
+					      	</tr>-->	
+					      	<!--{'classroomId':'1', 'place':'lxs', 'classroomNum':'13215269852', 'remark':'123@163.com', 'classId':'201603102', 'remark':'无', 'studentPw':'123465'}
+					      	['教室id', '位置', '电话', '邮箱', '教室id', '备注', '密码'];-->
+					      	<tr>
+					      		<td>教室Id</td>
+					      		<td><input  class="form-control" placeholder="教室Id" ng-model="entity.classroomId">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>位置</td>
+					      		<td><input  class="form-control" placeholder="位置" ng-model="entity.place">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>座位数</td>
+					      		<td><input  class="form-control" placeholder="座位数" ng-model="entity.classroomNum">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>备注</td>
+					      		<td><input  class="form-control" placeholder="备注" ng-model="entity.remark">  </td>
+					      	</tr>
+						 </table>				
+					</div>
+					<div class="modal-footer">						
+						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="save()">保存</button>
+						<button class="btn btn-default" data-dismiss="modal" aria-hidden="true" ng-click="changeStatusToAdd()">关闭</button>
+					</div>
+        		 </div>
+        	</div>
+        </div>
+        <!--编辑框-->
+		
+		
+	
+		
+	</body>
+</html>

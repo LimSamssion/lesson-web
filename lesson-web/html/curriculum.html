@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>查询课表</title>
+		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
+		<style type="text/css">
+			td:hover{
+				background-color: ghostwhite;
+				cursor: default;
+				border: #00733E 2px;
+			}
+			th td{
+				margin: 5px;
+			}
+			th.thclass{
+				background-color: ghostwhite;
+			}
+		</style>
+		
+		
+		<!-- jQuery 3 -->
+		<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+		<!-- Bootstrap 3.3.7 -->
+		<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<!--angular.min.js-->
+		<script src="../bower_components/angularjs/angular.min	.js"></script>
+		
+		<script type="text/javascript">
+    	var app = angular.module("CurriculumApp",[]);
+    	var URI = "http://localhost:8801/";
+    	app.controller("CurriculumController",function($scope,$http){		
+    		
+    		//$scope.list = ['一','二','三','四','五','六','七','八','九'];
+    		
+    		//[{"scheduleId":"1","classId":"101","classroomId":"1","courseId":"1","teacherId":"20160301","timeId":"1","remark":null,"className":"三年级一班","place":"A101","courseName":"语文","teacherName":"罗卿"}
+    		
+    		$scope.list = [1,2,3,4,5,6,7,8,9];
+    		$scope.classList = [1,2,3,4,5,6,7,8,9];
+
+			$scope.grade = $scope.list[0];
+    		$scope.classNum = $scope.classList[0];
+    		
+//  		$scope.week = ['星期一','星期二','星期三','星期四','星期五','星期六','星期日'];
+			$scope.nums = ['第一节','第二节','第三节','第四节','第五节','第六节','第七节'];
+    		
+    		$scope.selectCurriculum = function(grade,classNum){
+    			alert("查询的班级是"+grade+"年级"+classNum+"班");
+    		}
+    		
+    		//当下拉框的年级发生改变时，调用该函数，查出该年级所有的班别
+    		$scope.classChange = function(grade){
+    			//alert("查询年级变为："+grade);
+    			
+    		}
+    		
+    		$scope.mon = [];
+			$scope.tue = [];
+			$scope.wedn = [];
+			$scope.thu = [];
+			$scope.fri = [];
+    		
+    		$scope.findSchedule = function(){
+    			$http.get("http://localhost:8663/lesson/hhhh").success(function(response){
+    				schedule = response;
+    				console.log(schedule);
+    				
+					
+					$scope.newArr = group(schedule,7);
+					console.log($scope.newArr);
+					
+					$scope.mon = $scope.newArr[0];
+					$scope.tue = $scope.newArr[1];
+					$scope.wedn = $scope.newArr[2];
+					$scope.thu = $scope.newArr[3];
+					$scope.fri = $scope.newArr[4];
+					
+//					console.log($scope.mon);
+//					console.log($scope.tue);
+//					console.log($scope.wedn);
+//					console.log($scope.thu);
+//					console.log($scope.fri);
+					
+
+    			})
+    		}
+    		
+    		/*var numbers1 = [45, 4, 9, 16, 25];
+			var numbers2 = numbers1.map(myFunction);
+			
+			function myFunction(value) {
+			  return value * 2;
+			}*/
+    		
+    		function group(array, subGroupLength) {
+		      let index = 0;
+		      let newArray = [];
+		      while(index < array.length) {
+		          newArray.push(array.slice(index, index += subGroupLength));
+		      }
+		      return newArray;
+		  }
+    		
+    	
+    		
+    		
+    		
+    		
+    		
+    	});
+    	
+    	
+    	
+    </script>
+		
+		
+	</head>
+	<body class="hold-transition skin-red sidebar-mini" ng-app="CurriculumApp" ng-controller="CurriculumController" ng-init="findSchedule()">
+		<div class="box-header with-border">
+			<h3 class="box-title">查询课表</h3>
+		</div>
+		
+		<div class="box-body">
+
+			
+			<div class="table-box">
+                
+                <!--查询栏-->
+                <div class="container center-block">
+				   <div class="row" >
+				      <div class="col-md-3 col-sm-3">
+				        <select name="" class="form-control"  ng-model="grade" ng-options="op for op in list" ng-change="classChange(grade)">
+                			<option value=""></option>
+                		</select>
+				      </div>
+				      <div class="col-md-1 col-sm-1">
+				         <span>年级</span>
+				      </div>
+				      <div class="col-md-3 col-sm-3">
+				        <select name="" class="form-control"  ng-model="classNum" ng-options="num for num in classList">
+                			<option value=""></option>
+                		</select>
+				      </div>
+				      <div class="col-md-1 col-sm-1">
+				         <span>班</span>
+				      </div>
+				      <div class="col-md-2 col-sm-2">
+						<input type="submit" value="查询课表" ng-click="selectCurriculum(grade,classNum)"/>				      	
+				      </div>
+					</div>
+				</div>
+                
+                
+                
+                <br/><br/><br/>
+                <!--
+                	作者：1521484428@qq.com
+                	时间：2019-10-15
+                	描述：数据表格
+                -->
+                <table class="table table-bordered 	">
+                	<thead>
+                		<tr>
+                			<th>星期  / 时间</th>
+							<th ng-repeat="num in nums" class="thclass">{{num}}</th>
+                		</tr>
+                	</thead>
+                	<tbody>
+                		<tr>
+                			<th class="thclass">星期一</th>
+                			<td ng-repeat="s in mon">{{s.timeId}}.{{s.courseName}}.{{s.teacherName}}</td>
+                		</tr>
+                		<tr >
+                			<th class="thclass">星期二</th>
+                			<td ng-repeat="s in tue">{{s.timeId}}.{{s.courseName}}.{{s.teacherName}}</td>
+                		</tr>
+                		<tr >
+                			<th class="thclass">星期三</th>
+                			<td ng-repeat="s in wedn">{{s.timeId}}.{{s.courseName}}.{{s.teacherName}}</td>
+                		</tr>
+                		<tr >
+                			<th class="thclass">星期四</th>
+                			<td ng-repeat="s in thu">{{s.timeId}}.{{s.courseName}}.{{s.teacherName}}</td>
+                		</tr>
+                		<tr >
+                			<th class="thclass">星期五</th>
+                			<td ng-repeat="s in fri">{{s.timeId}}.{{s.courseName}}.{{s.teacherName}}</td>
+                		</tr>
+                		<tr >
+                			<th class="thclass">星期六</th>
+                		</tr>
+                		<tr >
+                			<th class="thclass">星期日</th>
+                		</tr>
+                	</tbody>
+                </table>
+                <!--数据表格-->
+                
+			</div>
+			<!--table-box-->
+			
+		</div>
+		<!--box-body-->
+	
+		
+	</body>
+</html>

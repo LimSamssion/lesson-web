@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>学生管理</title>
+		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
+		
+		<!-- jQuery 3 -->
+		<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+		<!-- Bootstrap 3.3.7 -->
+		<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<!--angular.min.js-->
+		<script src="../bower_components/angularjs/angular.min.js"></script>
+		
+		<script type="text/javascript">
+    	
+    	var app = angular.module("StudentApp",[]);
+    	var URI = "http://localhost:8801/";
+    	var table = "Student/";
+    	app.controller("StudentController",function($scope,$http){
+    		$scope.student = ['学生id', '姓名', '电话', '邮箱', '班级id', '备注', '密码'];
+    		
+    		$scope.name = ['studentId', 'studentName', 'telephoto', 'email', 'classId', 'remark', 'studentPw'];
+    		
+    		
+    		$scope.list = [{'studentId':'1', 'studentName':'lxs', 'telephoto':'13215269852', 'email':'123@163.com', 'classId':'201603102', 'remark':'无', 'studentPw':'123465'},
+    						{'studentId':'2', 'studentName':'lxs', 'telephoto':'13215269852', 'email':'123@163.com', 'classId':'201603102', 'remark':'无', 'studentPw':'123465'},
+    						{'studentId':'3', 'studentName':'lxs', 'telephoto':'13215269852', 'email':'123@163.com', 'classId':'201603102', 'remark':'无', 'studentPw':'123465'},
+    						{'studentId':'4', 'studentName':'lxs', 'telephoto':'13215269852', 'email':'123@163.com', 'classId':'201603102', 'remark':'无', 'studentPw':'123465'}
+    						];
+    		
+    		//$scope.text = "测试angular";
+    		
+    		$scope.findAll = function(){
+    			$http.get(URI + table +  "findAll").success(function(response){
+    				$scope.list = response;
+    			});
+    		}
+    		
+    		$scope.save = function(){
+    			//alert("save....");
+    			console.log($scope.entity);
+    			var op = "add";//默认为添加操作
+    			if($scope.entity.id != null){//如果id不为空，则为修改操作
+    				op = "update";
+    			}
+    			
+    			$http.post(URI + table + op ,$scope.entity).success(function(response){
+    				if(response.success){
+    					$scope.reloadList();
+    				}else{
+    					alert("操作失败");
+    				}
+    			});
+    			
+    			
+    		}
+    		
+    		$scope.findOne = function(brand_id){
+    			$http.get(URI + table + "findOne/" + brand_id).success(function(response){
+    				$scope.entity = response;
+    			});
+    		}
+    		
+    		
+    		$scope.paginationConf = {
+				currentPage : 1,
+				totalItems : 5,
+				itemsPerPage : 5,
+				perPageOptions : [5, 10, 20, 30, 40, 50 ],
+				onChange : function() {
+					$scope.reloadList();
+				}
+			};
+    		
+    		
+    		$scope.reloadList = function(){
+    			$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage);
+    		}
+    		
+    		$scope.findByPage = function(pageNo,pageSize){
+    			$http.get(URI + "findByPage?pageNo="+pageNo+"&pageSize="+pageSize).success(function(response){
+    				$scope.list = response.list;
+    				$scope.paginationConf.totalItems = response.total;
+    			});
+    		}
+    		
+    		$scope.seletedIds = [];//存放被选中的Id
+    		$scope.selectUpdate = function(id,event){
+    			if(event.target.checked){
+    				console.log(id+"被选中...");
+    				//event是一个事件，当多选框被选中时或取消选中时发生的事件
+    				//event.target是发生事件的组件，即checkbox
+    				//event.target.checked是组件的checked属性，检查是否被选中
+    				$scope.seletedIds.push(id);
+    			}else{
+    				console.log(id+"取消选中...");
+    				var index = $scope.seletedIds.indexOf(id);
+    				$scope.seletedIds.splice(index,1);
+    			}
+    			console.log($scope.seletedIds);
+    		}
+    		
+    		$scope.delete = function(seletedIds){
+    			if(confirm("你确定要删除吗？")){
+	    			$http.get(URI + "deleteBrandByIds?selectedIds=" + seletedIds).success(function(response){
+	    				if(response.success){
+	    					$scope.reloadList();
+	    				}else{
+	    					alert("删除失败！")
+	    				}
+	    			});
+    			}
+ 
+    		}
+    		
+    		
+    	});
+    	
+    	
+    </script>
+		
+		
+	</head>
+	<body class="hold-transition skin-red sidebar-mini" ng-app="StudentApp" ng-controller="StudentController">
+		<div class="box-header with-border">
+			<h3 class="box-title">学生管理</h3>
+		</div>
+		
+		<div class="box-body">
+
+			
+			<div class="table-box">
+				<!--
+                	描述：工具栏
+                	有三个按钮：添加/删除/刷新
+                -->
+                <div class="pull-left">
+                	<div class="form-group form-inline">
+                		<div class="btn-group">
+                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" ng-click="entity={}">添加</button>
+	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除</button>
+	                		<button type="button" class="btn btn-default" title="刷新">刷新</button>	
+                		</div>
+                	</div>
+                </div>
+                <!--工具栏-->
+                
+                
+                <!--
+                	作者：1521484428@qq.com
+                	时间：2019-10-15
+                	描述：数据表格
+                -->
+                <table class="table table-bordered table-striped table-hover	">
+                	<thead>
+                		<tr ng-model="student">
+							<th class="" style="padding-right:0px">
+	                              <input id="selall" type="checkbox" class="icheckbox_square-blue">
+	                          </th> 
+							<th ng-repeat="column in student">{{column}}</th>
+                			<th class="text-center">操作</th>
+                		</tr>
+                	</thead>
+                	
+                	<tbody>
+                		<tr ng-repeat="row in list">
+                			<!--'studentId', 'studentName', 'telephoto', 'email', 'classId', 'remark', 'studentPw'-->
+                			<td><input  type="checkbox" ng-click="selectUpdate(row.studentId,$event)"></td>
+                			<td>{{row.studentId}}</td>
+                			<td>{{row.studentName}}</td>
+                			<td>{{row.telephoto}}</td>
+                			<td>{{row.email}}</td>
+                			<td>{{row.classId}}</td>
+                			<td>{{row.remark}}</td>
+                			<td>{{row.studentPw}}</td>
+                			<!--<td>101</td>
+                			<td>老王</td>
+                			<td>111</td>
+                			<td>axx@163.com</td>
+                			<td>2016-9</td>
+                			<td>701班</td>-->
+                			<td class="text-center">                                           
+		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row.studentId)">修改</button>                                           
+		                  </td>
+                		</tr>
+                	</tbody>
+                </table>
+                <!--数据表格-->
+                
+			</div>
+			<!--table-box-->
+			
+		</div>
+		<!--box-body-->
+		
+		<!-- 模态框（Modal） -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
+		  	 aria-labelledby="myModalLabel" aria-hidden="true">
+			   <div class="modal-dialog">
+			      <div class="modal-content">
+			        <div class="modal-header">
+        		 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+        		 		<h4 class="modal-title" id="myModalLabel">学生管理</h4>
+        		 		<h3 id="myModalLabel">添加学生</h3>
+        		 	</div>
+        		 	<div class="modal-body">		
+						<table class="table table-bordered table-striped"  width="800px">
+					      	<!--<tr ng-repeat="stu in student">
+					      		<td ng-hide={{$first}}>{{stu}}</td>
+					      		<td ng-hide={{$first}}><input  class="form-control" placeholder="{{stu}}" ng-model="entity.{{}}" >  </td>
+					      	</tr>-->	
+					      	<!--{'studentId':'1', 'studentName':'lxs', 'telephoto':'13215269852', 'email':'123@163.com', 'classId':'201603102', 'remark':'无', 'studentPw':'123465'}
+					      	['学生id', '姓名', '电话', '邮箱', '班级id', '备注', '密码'];-->
+					      	<tr>
+					      		<td>姓名</td>
+					      		<td><input  class="form-control" placeholder="姓名" ng-model="entity.studentName">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>电话</td>
+					      		<td><input  class="form-control" placeholder="电话" ng-model="entity.telephoto">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>邮箱</td>
+					      		<td><input  class="form-control" placeholder="邮箱" ng-model="entity.email">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>班级id</td>
+					      		<td><input  class="form-control" placeholder="班级id" ng-model="entity.classId">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>备注</td>
+					      		<td><input  class="form-control" placeholder="备注" ng-model="entity.remark">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>密码</td>
+					      		<td><input  class="form-control" placeholder="密码" ng-model="entity.studentPw">  </td>
+					      	</tr>
+						 </table>				
+					</div>
+					<div class="modal-footer">						
+						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="save()">保存</button>
+						<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+					</div>
+        		 </div>
+        	</div>
+        </div>
+        <!--编辑框-->
+		
+		
+	
+		
+	</body>
+</html>
