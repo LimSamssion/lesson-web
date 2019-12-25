@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>所有班级课表</title>
+		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
+		
+		
+		<!-- jQuery 3 -->
+		<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+		<!-- Bootstrap 3.3.7 -->
+		<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<!--angular.min.js-->
+		<script src="../bower_components/angularjs/angular.min.js"></script>
+		
+		<script type="text/javascript">
+			
+    	var app = angular.module("AllClassCurriculumApp",[]);
+    	var URI = "http://localhost:8663/lesson/";
+    	app.controller("AllClassCurriculumController",function($scope,$http){		
+    		
+    		$scope.nums = [1,2,3,4,5,6,7];
+    		
+    			
+    		
+    		$scope.findAllSchedule = function(){
+    			$http.get(URI + "schedule/findAllSchedule").success(function(response){
+    				$scope.list = response;
+    				console.log($scope.list);
+    			})
+    		}
+    		
+    		
+    		
+    		
+    		
+    		
+    	});
+    	
+    	
+    	
+    </script>
+		
+		
+	</head>
+	<body class="hold-transition skin-red sidebar-mini" ng-app="AllClassCurriculumApp" ng-controller="AllClassCurriculumController" ng-init="findAllSchedule()">
+		<div class="box-header with-border">
+			<h3 class="box-title">所有班级课表</h3>
+		</div>
+		
+		<div class="box-body">
+
+                <br/><br/><br/>
+                <!--
+                	作者：1521484428@qq.com
+                	时间：2019-10-15
+                	描述：数据表格
+                -->
+                <table class="table table-bordered table-striped 	">
+                	<thead>
+                		<tr>
+                			<th>星期节次</th>
+                			<th ng-repeat="num in nums">
+                				一{{num}}
+                			</th>
+                			<th ng-repeat="num in nums">
+                				二{{num}}
+                			</th>
+                			<th ng-repeat="num in nums">
+                				三{{num}}
+                			</th>
+                			<th ng-repeat="num in nums">
+                				四{{num}}
+                			</th>
+                			<th ng-repeat="num in nums">
+                				五{{num}}
+                			</th>
+                		</tr>
+                	</thead>
+                	<tbody>
+                		<tr ng-repeat="classSchedule in list">
+                			<td>{{classSchedule.tClass.grade}}{{classSchedule.tClass.className}}</td>
+                			<td ng-repeat="schedule in classSchedule.curriculum">{{schedule.courseName}}</td>
+                		</tr>
+                	</tbody>
+                </table>
+                <!--数据表格-->
+                
+			</div>
+			<!--table-box-->
+			
+		</div>
+		<!--box-body-->
+	
+		
+	</body>
+</html>

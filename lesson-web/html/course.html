@@ -24,7 +24,7 @@
     	//定义一个状态码，0表示添加，1表示更新
     	var status = 0;
     	app.controller("CourseController",function($scope,$http){
-    		$scope.title = ['课程Id', '班级Id', '教师Id', '课程名', '课程性质', '学时', '备注'];
+    		$scope.title = ['课程Id', '班级Id', '教师Id', '课程名称代码', '课程权重', '学时', '课程名称'];
     		
     		$scope.name = ['courseId', 'classId', 'teacherId', 'courseName', 'courseSort', 'classHour', 'remark'];
     		
@@ -244,20 +244,20 @@
 					      		<td><input  class="form-control" placeholder="教师Id" ng-model="entity.teacherId">  </td>
 					      	</tr>
 					      	<tr>
-					      		<td>课程名</td>
-					      		<td><input  class="form-control" placeholder="课程名" ng-model="entity.courseName">  </td>
+					      		<td>课程名称代码</td>
+					      		<td><input  class="form-control" placeholder="课程名称代码" ng-model="entity.courseName">  </td>
 					      	</tr>
 					      	<tr>
-					      		<td>课程性质</td>
-					      		<td><input  class="form-control" placeholder="课程性质" ng-model="entity.courseSort">  </td>
+					      		<td>课程权重</td>
+					      		<td><input  class="form-control" placeholder="课程权重" ng-model="entity.courseSort">  </td>
 					      	</tr>
 					      	<tr>
 					      		<td>学时</td>
 					      		<td><input  class="form-control" placeholder="学时" ng-model="entity.classHour">  </td>
 					      	</tr>
 					      	<tr>
-					      		<td>备注</td>
-					      		<td><input  class="form-control" placeholder="备注" ng-model="entity.remark">  </td>
+					      		<td>课程名称</td>
+					      		<td><input  class="form-control" placeholder="课程名称" ng-model="entity.remark">  </td>
 					      	</tr>
 						 </table>				
 					</div>

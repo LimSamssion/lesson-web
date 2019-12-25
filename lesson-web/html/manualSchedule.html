@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>排课任务列表</title>
+		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
+		<style type="text/css">
+			td:hover{
+				background-color: ghostwhite;
+				cursor: pointer;
+				border: #00733E 2px;
+				
+			}
+			th td{
+				margin: 5px;
+			}
+			th.thclass{
+				background-color: ghostwhite;
+			}
+		</style>
+		
+		
+		<!-- jQuery 3 -->
+		<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+		<!-- Bootstrap 3.3.7 -->
+		<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<!--angular.min.js-->
+		<script src="../bower_components/angularjs/angular.min.js"></script>
+		
+		<script>
+			//jquery代码
+			$(document).ready(function(){
+				
+				$("td").mousemove(function(){
+					this.title = "点击添加/删除课程";
+				})
+				
+			});
+			
+		</script>
+		
+		<script type="text/javascript">
+    	var app = angular.module("ManualScheduleApp",[]);
+    	var URI = "http://localhost:8663/lesson/";
+    	app.controller("ManualScheduleController",function($scope,$http){		
+    		
+			$scope.nums = ['第一节','第二节','第三节','第四节','第五节','第六节','第七节'];
+			
+			$scope.mon = [1,2,3,4,5,6,7];
+			
+			$scope.AddOrDelSchedule = function(timeId){
+				alert(timeId);
+			}
+			
+			
+			$scope.scheduleList = [];
+			
+			
+			
+			
+//			$scope.findAllTeacher = function(){
+//				$http.get(URI + "teacher/findAll").success(function(response){
+//					$scope.teacherList = response;
+////					console.log($scope.teacherList);
+//				})
+//			}
+//  		
+//  		$scope.selectCurriculum = function(teacherId){
+//				$http.get(URI + "schedule/teacherplan?tercherId=" + teacherId).success(function(response){
+//					$scope.scheduleList = response;
+//					console.log($scope.scheduleList);
+////					alert("selectCurriculum...");
+//					
+////					$scope.addElement($scope.scheduleList);
+//					
+//					$scope.divit($scope.scheduleList);
+//					
+//					
+//				})
+//  		}
+//  		
+//  		$scope.addElement = function(scheduleList){
+//  			alert("addelement...");
+//  			for(var i=0; i<scheduleList.length; i++){
+//  				var schedule = scheduleList[i];
+//  				var timeId = schedule.timeId;
+//  				console.log("timeId="+timeId);
+//  				
+//  				var x = parseInt(timeId/7); console.log("x="+x);
+//  				var y = timeId%7; console.log("y="+y);
+//  				
+//  				var selector;
+//  				switch(x){
+//  					case 0: selector =$("#mon"); break;
+//  					case 1: selector =$("#tue"); break;
+//  					case 2: selector =$("#wedn"); break;
+//  					case 3: selector =$("#thu"); break;
+//  					case 4: selector =$("#fri"); break;
+//  				}
+//  				
+//  				switch(y){
+//  					case 1: selector =$(selector).children(".one"); break;
+//  					case 2: selector =$(selector).children(".two"); break;
+//  					case 3: selector =$(selector).children(".three"); break;
+//  					case 4: selector =$(selector).children(".four"); break;
+//  					case 5: selector =$(selector).children(".five"); break;
+//  					case 6: selector =$(selector).children(".six"); break;
+//  					case 7: selector =$(selector).children(".seven"); break;
+//  				}
+//  				
+//  				console.log("selector="+$(selector));
+//  				$(selector).append(timeId+"."+schedule.courseName+"."+schedule.className);
+////  				alert("...");
+////  				$(#selector).append(timeId+"."+schedule.courseName+"."+schedule.className);
+//  				
+//  			}
+//  		}
+//  		
+//  		
+//  		$scope.findSchedule = function(){
+//  			$http.get("http://localhost:8663/lesson/schedule/studentplan?classId=701").success(function(response){
+//  				schedule = response;
+//  				console.log(schedule);
+//  				
+//					
+//					$scope.newArr = group(schedule,7);
+//					console.log($scope.newArr);
+//					
+//					$scope.mon = $scope.newArr[0];
+//					$scope.tue = $scope.newArr[1];
+//					$scope.wedn = $scope.newArr[2];
+//					$scope.thu = $scope.newArr[3];
+//					$scope.fri = $scope.newArr[4];
+//								
+//
+//  			})
+//  		}
+//  		
+//  		$scope.divit = function(schedule){
+//  			
+//  				console.log(schedule);
+//  				
+//					
+//					$scope.newArr = group(schedule,7);
+//					console.log($scope.newArr);
+//					
+//					$scope.mon = $scope.newArr[0];
+//					$scope.tue = $scope.newArr[1];
+//					$scope.wedn = $scope.newArr[2];
+//					$scope.thu = $scope.newArr[3];
+//					$scope.fri = $scope.newArr[4];
+//  		}
+//  		
+//  		
+//  		function group(array, subGroupLength) {
+//		      let index = 0;
+//		      let newArray = [];
+//		      while(index < array.length) {
+//		          newArray.push(array.slice(index, index += subGroupLength));
+//		      }
+//		      return newArray;
+//		  }
+//  		
+    		
+    	});
+    	
+    	
+    	
+    </script>
+		
+		
+	</head>
+	<body class="hold-transition skin-red sidebar-mini" ng-app="ManualScheduleApp" ng-controller="ManualScheduleController" ng-init="findAllTeacher()">
+		<div class="box-header with-border">
+			<h3 class="box-title">排课任务列表</h3>
+		</div>
+		
+		<div class="box-body">
+
+			
+			<div class="table-box">
+                
+                <!--查询栏-->
+                <div class="container center-block">
+				   <div class="row" >
+				      
+				      <div class="col-md-3 col-sm-9">
+				         <span>选择教师：</span>
+				      </div>
+				      <div class="col-md-9 col-sm-9">
+				        <select name="" class="form-control"  ng-model="teacherId" ng-options="teacher.teacherId as teacher.teacherName for teacher in teacherList">
+                			<option value=""></option>
+                		</select>
+				      </div>
+				      
+				      <div class="col-md-2 col-sm-2">
+						<input type="submit" value="排课任务列表" ng-click="selectCurriculum(teacherId)"/>				      	
+				      </div>
+					</div>
+				</div>
+                
+                
+                
+                <br/><br/><br/>
+                <!--
+                	作者：1521484428@qq.com
+                	时间：2019-10-15
+                	描述：数据表格
+                -->
+                <table class="table table-bordered 	">
+                	<thead>
+                		<tr>
+                			<th>星期  / 时间</th>
+							<th ng-repeat="num in nums" class="thclass">{{num}}</th>
+                		</tr>
+                	</thead>
+                	<tbody id="Tbody">
+                		<tr id="mon">
+                			<th class="thclass">星期一</th>
+                			<td ng-repeat="num in mon" ng-click="AddOrDelSchedule(num)"></td>
+                			<!--<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>-->
+                		</tr>
+                		<tr id="tue">
+                			<th class="thclass">星期二</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                		<tr id="wedn">
+                			<th class="thclass">星期三</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                		<tr id="thu">
+                			<th class="thclass">星期四</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                		<tr id="fir">
+                			<th class="thclass">星期五</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                	</tbody>
+                </table>
+                <!--数据表格-->
+                
+			</div>
+			<!--table-box-->
+			
+		</div>
+		<!--box-body-->
+	
+		
+	</body>
+</html>

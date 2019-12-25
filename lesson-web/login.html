@@ -2,33 +2,83 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title></title>
+		<title>账号登录</title>
 		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		
 		<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
 		
-		
-		
-		
-		
-	</head>
-	<body>
-		
-		<form role="form"  >
-			
-			<div class="form-group">
-				<lavel for="username">账号</lavel>
-				
-			</div>
-			
-			
-		</form>
-		
-		
 		<!-- jQuery 3 -->
 		<script src="bower_components/jquery/dist/jquery.min.js"></script>
 		<!-- Bootstrap 3.3.7 -->
 		<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		
+		<script type="text/javascript">
+			
+			function check(){
+				var role = $(".role:checked").val();
+				var username = $("#username").val();
+				var password = $("#password").val();
+				alert("role="+role+",username="+username+",password="+password);
+				if(role == null || role.equals("")){
+					alert("role为空")
+				}
+				if(username == null || username.equals("") || username.length==0){
+					alert("username为空")
+				}
+				if(password == null || password.equals("")){
+					alert("password为空")
+				}
+				
+			}
+			
+		</script>
+		
+		
+	</head>
+	<body background="img/0.jpg" style="background-repeat: no-repeat;background-size: 100% 100%;background-attachment: fixed;">
+		<h1 align="center">欢迎来到排课系统</h1>
+		<hr />
+		<br /><br /><br /><br /><br />
+		<form action="/" method="post">
+			<table width="300px" height="150px" align="center" bgcolor="white" class="table_style">
+				<tbody>
+					<tr height="40px" align="left">
+						<td align="right">
+							<!--<select>
+								<option value="selecto1">小学</option>
+								<option value="selecto2">中学</option>
+								<option value="selecto3">大学</option>
+							</select>-->
+						</td>
+						<td colspan="2">
+							<input type="radio" name="role" class="role" value="admin"></input><label>管理员</label>
+							<input type="radio" name="role" class="role" value="teacher"></input><label>老师</label>
+							<input type="radio" name="role" class="role" value="student"></input><label>学生</label>
+						</td>
+					</tr>
+					<tr>
+						<td align="right">用户名:</td>
+						<td colspan="2">
+							<input type="text" name="username" id="username"/>
+						</td>
+					</tr>
+					<tr>
+						<td align="right">密码:</td>
+						<td colspan="2">
+							<input type="password" name="password" id="password"/>
+						</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td align="left" colspan="2">
+							<input type="button" value="登录" onclick="check()" style="width: 70px; background-color: aquamarine;"/>
+							<input type="reset" value="重置" style="width: 70px; background-color: aquamarine;"/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+		
 	</body>
 </html>
