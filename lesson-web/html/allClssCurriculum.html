@@ -31,6 +31,30 @@
     			})
     		}
     		
+    		// 创建a标签模拟下载
+			$scope.download = function() {
+				alert("download...");
+				var h = URI + "schedule/downloadall";
+			    return $http({
+			        url: h,
+			    method: "GET",
+			    headers: {
+			        'Content-type': 'application/json'
+			    },
+			    responseType: 'arraybuffer'
+			}).success(function (data) {
+			    var blob = new Blob([data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+			    var objectUrl = URL.createObjectURL(blob);
+			    var a = document.createElement('a');
+			    document.body.appendChild(a);
+			    a.setAttribute('style', 'display:none');
+			    a.setAttribute('href', objectUrl);
+			    a.setAttribute('download', "课程表");
+			        a.click();
+			        URL.revokeObjectURL(objectUrl);
+			    });
+			}
+    		
     		
     		
     		
@@ -48,6 +72,10 @@
 		<div class="box-header with-border">
 			<h3 class="box-title">所有班级课表</h3>
 		</div>
+		
+		<div class="col-md-2 col-sm-2">
+			<input type="button" value="下载课表" ng-click="download()"/>				      	
+        </div>
 		
 		<div class="box-body">
 

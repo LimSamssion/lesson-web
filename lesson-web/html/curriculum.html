@@ -143,6 +143,29 @@
     			})
     		}
     		
+    		// 创建a标签模拟下载
+			$scope.downloadCurriculum = function(classNum) {
+				var h = URI + "schedule/downloadstudent/" + classNum;
+			    return $http({
+			        url: h,
+			    method: "GET",
+			    headers: {
+			        'Content-type': 'application/json'
+			    },
+			    responseType: 'arraybuffer'
+			}).success(function (data) {
+			    var blob = new Blob([data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+			    var objectUrl = URL.createObjectURL(blob);
+			    var a = document.createElement('a');
+			    document.body.appendChild(a);
+			    a.setAttribute('style', 'display:none');
+			    a.setAttribute('href', objectUrl);
+			    a.setAttribute('download', classNum+"课程表");
+			        a.click();
+			        URL.revokeObjectURL(objectUrl);
+			    });
+			}
+    		
     	
     		
     		
@@ -161,6 +184,8 @@
 		<div class="box-header with-border">
 			<h3 class="box-title">查询课表</h3>
 		</div>
+		
+		
 		
 		<div class="box-body">
 
@@ -193,6 +218,10 @@
 				      <div class="col-md-2 col-sm-2">
 						<input type="submit" value="查询课表" ng-click="selectCurriculum(classNum)"/>				      	
 				      </div>
+				      
+				      <div class="col-md-2 col-sm-2">
+						<input type="submit" value="下载课表" ng-click="downloadCurriculum(classNum)"/>				      	
+				     </div>
 					</div>
 				</div>
                 

@@ -42,6 +42,7 @@
 			}
     		
     		$scope.selectCurriculum = function(teacherId){
+//  			alert("查询教师课表：teacherid="+teacherId);
 				$http.get(URI + "schedule/teacherplan?tercherId=" + teacherId).success(function(response){
 					$scope.scheduleList = response;
 					console.log($scope.scheduleList);
@@ -137,6 +138,30 @@
 		      return newArray;
 		  }
     		
+    		// 创建a标签模拟下载
+				$scope.downloadCurriculum = function(teacherId,teacherName) {
+//				alert("teacherId="+teacherId+",=teacherName="+teacherName);
+				var h = URI + "schedule/downloadteacher/" + teacherId;
+			    return $http({
+			        url: h,
+			    method: "GET",
+			    headers: {
+			        'Content-type': 'application/json'
+			    },
+			    responseType: 'arraybuffer'
+			}).success(function (data) {
+			    var blob = new Blob([data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+			    var objectUrl = URL.createObjectURL(blob);
+			    var a = document.createElement('a');
+			    document.body.appendChild(a);
+			    a.setAttribute('style', 'display:none');
+			    a.setAttribute('href', objectUrl);
+			    a.setAttribute('download', teacherName+"课程表");
+			        a.click();
+			        URL.revokeObjectURL(objectUrl);
+			    });
+			}
+    		
     		
     	});
     	
@@ -160,17 +185,26 @@
                 <div class="container center-block">
 				   <div class="row" >
 				      
-				      <div class="col-md-3 col-sm-9">
+				      <div class="col-md-3 col-sm-3">
 				         <span>选择教师：</span>
 				      </div>
-				      <div class="col-md-9 col-sm-9">
-				        <select name="" class="form-control"  ng-model="teacherId" ng-options="teacher.teacherId as teacher.teacherName for teacher in teacherList">
+				      <div class="col-md-5 col-sm-5">
+				        <select name="" class="form-control"  ng-model="teacher" ng-options="teacher.teacherName for teacher in teacherList">
                 			<option value=""></option>
                 		</select>
 				      </div>
 				      
 				      <div class="col-md-2 col-sm-2">
-						<input type="submit" value="查询教师课表" ng-click="selectCurriculum(teacherId)"/>				      	
+						<input type="submit" value="查询教师课表" ng-click="selectCurriculum(teacher.teacherId)"/>				      	
+				      </div>
+				      
+				      <div class="col-md-2 col-sm-2">                      
+                                                                           <!--
+                                                                           	作者：592267445@qq.com
+                                                                           	时间：2019-12-26
+                                                                           	描述：*********************把教师名字传过去
+                                                                           -->
+						<input type="submit" value="下载教师课表" ng-click="downloadCurriculum(teacher.teacherId,teacher.teacherName)"/>				      	
 				      </div>
 					</div>
 				</div>
