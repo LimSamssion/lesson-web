@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>课程管理</title>
+		<title>班级管理</title>
 		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
 		<link rel="stylesheet" href="../bower_components/angularjs/pagination.css">
@@ -115,9 +115,9 @@
     		$scope.selectUpdate = function(id,event){
     			if(event.target.checked){
     				console.log(id+"被选中...");
-    				//event是一个事件，当多选框被选中时或取消选中时发生的事件
-    				//event.target是发生事件的组件，即checkbox
-    				//event.target.checked是组件的checked属性，检查是否被选中
+//    				event是一个事件，当多选框被选中时或取消选中时发生的事件
+//    				event.target是发生事件的组件，即checkbox
+//    				event.target.checked是组件的checked属性，检查是否被选中
     				$scope.seletedIds.push(id);
     			}else{
     				console.log(id+"取消选中...");
@@ -150,7 +150,7 @@
 	</head>
 	<body class="hold-transition skin-red sidebar-mini" ng-app="ClassApp" ng-controller="ClassController">
 		<div class="box-header with-border">
-			<h3 class="box-title">课程管理</h3>
+			<h3 class="box-title">班级管理</h3>
 		</div>
 		
 		<div class="box-body">
@@ -219,7 +219,7 @@
 			      <div class="modal-content">
 			        <div class="modal-header">
         		 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-        		 		<h4 class="modal-title" id="myModalLabel">课程管理</h4>
+        		 		<h4 class="modal-title" id="myModalLabel">班级管理</h4>
         		 		<h3 id="myModalLabel">添加课程</h3>
         		 	</div>
         		 	<div class="modal-body">		

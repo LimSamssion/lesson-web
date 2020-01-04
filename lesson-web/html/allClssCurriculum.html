@@ -23,7 +23,7 @@
     		$scope.nums = [1,2,3,4,5,6,7];
     		
     			
-    		
+    		//查询所有年级课表
     		$scope.findAllSchedule = function(){
     			$http.get(URI + "schedule/findAllSchedule").success(function(response){
     				$scope.list = response;
@@ -31,9 +31,16 @@
     			})
     		}
     		
+    		//查询出所有的年级
+    		$scope.findAll = function(){
+    			$http.get(URI + "schedule/findAllTask").success(function(response){
+    				$scope.gradeList = response;
+    			});
+    		}
+    		
     		// 创建a标签模拟下载
 			$scope.download = function() {
-				alert("download...");
+//				alert("download...");
 				var h = URI + "schedule/downloadall";
 			    return $http({
 			        url: h,
@@ -54,6 +61,51 @@
 			        URL.revokeObjectURL(objectUrl);
 			    });
 			}
+			
+			
+			//按年级下载课表
+			$scope.downloadCondition = function(grade) {
+				console.log("下载"+grade);
+				if(typeof grade=="undefined"){
+					console.log("下载所有课表");
+					$scope.download();
+				}else{
+					console.log("下载"+grade+"课表");
+					var h = URI + "schedule/downloadall?grade="+grade;
+				    return $http({
+				        url: h,
+				    method: "GET",
+				    headers: {
+				        'Content-type': 'application/json'
+				    },
+				    responseType: 'arraybuffer'
+				}).success(function (data) {
+				    var blob = new Blob([data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+				    var objectUrl = URL.createObjectURL(blob);
+				    var a = document.createElement('a');
+				    document.body.appendChild(a);
+				    a.setAttribute('style', 'display:none');
+				    a.setAttribute('href', objectUrl);
+				    a.setAttribute('download', "课程表");
+				        a.click();
+				        URL.revokeObjectURL(objectUrl);
+				    });
+				}
+			}
+			
+			
+			//查询年级课表
+			$scope.selectCurriculum = function(grade){
+				console.log("查询"+grade);
+				console.log(typeof grade=="undefined");
+				if(typeof grade=="undefined"){
+					$scope.findAllSchedule();
+				}
+				$http.get(URI + "schedule/findAllSchedule?grade="+grade).success(function(response){
+    				$scope.list = response;
+    				console.log($scope.list);
+    			})
+			}
     		
     		
     		
@@ -68,14 +120,42 @@
 		
 		
 	</head>
-	<body class="hold-transition skin-red sidebar-mini" ng-app="AllClassCurriculumApp" ng-controller="AllClassCurriculumController" ng-init="findAllSchedule()">
+	<body class="hold-transition skin-red sidebar-mini" ng-app="AllClassCurriculumApp" ng-controller="AllClassCurriculumController" ng-init="findAllSchedule();findAll()">
 		<div class="box-header with-border">
-			<h3 class="box-title">所有班级课表</h3>
+			<h3 class="box-title">年级课表</h3>
 		</div>
 		
-		<div class="col-md-2 col-sm-2">
-			<input type="button" value="下载课表" ng-click="download()"/>				      	
-        </div>
+		
+        
+        <br/>
+         <!--查询栏-->
+                <div class="container center-block">
+				   <div class="row" >
+				      
+				      <div class="col-md-3 col-sm-3">
+				         <span>选择年级（未选择任何年级为查询所有年级课表）：</span>
+				      </div>
+				      <div class="col-md-3 col-sm-3">
+				        <select name="" class="form-control"  ng-model="row" ng-options="row.grade for row in gradeList">
+                			<option value=""></option>
+                		</select>
+				      </div>
+				      
+				      <div class="col-md-2 col-sm-2">
+						<input type="submit" value="查询年级课表" ng-click="selectCurriculum(row.grade)"/>				      	
+				      </div>
+				      
+				      <!--<div class="col-md-2 col-sm-2">
+						<input type="submit" value="查询所有课表" ng-click="findAllSchedule()"/>				      	
+				      </div>-->
+				      
+				      <div class="col-md-2 col-sm-2">
+						<input type="button" value="下载课表" ng-click="downloadCondition(row.grade)"/>				      	
+			          </div>
+				     
+					</div>
+				</div>
+        
 		
 		<div class="box-body">
 

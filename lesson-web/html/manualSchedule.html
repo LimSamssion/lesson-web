@@ -2,24 +2,10 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>排课任务列表</title>
+		<title>手动预排</title>
 		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
-		<style type="text/css">
-			td:hover{
-				background-color: ghostwhite;
-				cursor: pointer;
-				border: #00733E 2px;
-				
-			}
-			th td{
-				margin: 5px;
-			}
-			th.thclass{
-				background-color: ghostwhite;
-			}
-		</style>
-		
+		<link rel="stylesheet" href="../bower_components/angularjs/pagination.css">
 		
 		<!-- jQuery 3 -->
 		<script src="../bower_components/jquery/dist/jquery.min.js"></script>
@@ -27,255 +13,264 @@
 		<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 		<!--angular.min.js-->
 		<script src="../bower_components/angularjs/angular.min.js"></script>
-		
-		<script>
-			//jquery代码
-			$(document).ready(function(){
-				
-				$("td").mousemove(function(){
-					this.title = "点击添加/删除课程";
-				})
-				
-			});
-			
-		</script>
+		<!--分页插件-->
+		<script type="text/javascript" src="../bower_components/angularjs/pagination.js"></script>
 		
 		<script type="text/javascript">
-    	var app = angular.module("ManualScheduleApp",[]);
+    	
+    	var app = angular.module("CourseApp",['pagination']);
     	var URI = "http://localhost:8663/lesson/";
-    	app.controller("ManualScheduleController",function($scope,$http){		
+    	var table = "course/";
+    	//定义一个状态码，0表示添加，1表示更新
+    	var status = 0;
+    	app.controller("CourseController",function($scope,$http){
+    		$scope.title = ['课程Id', '班级Id', '教师Id', '课程名称代码', '课程权重', '学时', '课程名称'];
     		
-			$scope.nums = ['第一节','第二节','第三节','第四节','第五节','第六节','第七节'];
-			
-			$scope.mon = [1,2,3,4,5,6,7];
-			
-			$scope.AddOrDelSchedule = function(timeId){
-				alert(timeId);
-			}
-			
-			
-			$scope.scheduleList = [];
-			
-			
-			
-			
-//			$scope.findAllTeacher = function(){
-//				$http.get(URI + "teacher/findAll").success(function(response){
-//					$scope.teacherList = response;
-////					console.log($scope.teacherList);
-//				})
-//			}
-//  		
-//  		$scope.selectCurriculum = function(teacherId){
-//				$http.get(URI + "schedule/teacherplan?tercherId=" + teacherId).success(function(response){
-//					$scope.scheduleList = response;
-//					console.log($scope.scheduleList);
-////					alert("selectCurriculum...");
-//					
-////					$scope.addElement($scope.scheduleList);
-//					
-//					$scope.divit($scope.scheduleList);
-//					
-//					
-//				})
-//  		}
-//  		
-//  		$scope.addElement = function(scheduleList){
-//  			alert("addelement...");
-//  			for(var i=0; i<scheduleList.length; i++){
-//  				var schedule = scheduleList[i];
-//  				var timeId = schedule.timeId;
-//  				console.log("timeId="+timeId);
-//  				
-//  				var x = parseInt(timeId/7); console.log("x="+x);
-//  				var y = timeId%7; console.log("y="+y);
-//  				
-//  				var selector;
-//  				switch(x){
-//  					case 0: selector =$("#mon"); break;
-//  					case 1: selector =$("#tue"); break;
-//  					case 2: selector =$("#wedn"); break;
-//  					case 3: selector =$("#thu"); break;
-//  					case 4: selector =$("#fri"); break;
-//  				}
-//  				
-//  				switch(y){
-//  					case 1: selector =$(selector).children(".one"); break;
-//  					case 2: selector =$(selector).children(".two"); break;
-//  					case 3: selector =$(selector).children(".three"); break;
-//  					case 4: selector =$(selector).children(".four"); break;
-//  					case 5: selector =$(selector).children(".five"); break;
-//  					case 6: selector =$(selector).children(".six"); break;
-//  					case 7: selector =$(selector).children(".seven"); break;
-//  				}
-//  				
-//  				console.log("selector="+$(selector));
-//  				$(selector).append(timeId+"."+schedule.courseName+"."+schedule.className);
-////  				alert("...");
-////  				$(#selector).append(timeId+"."+schedule.courseName+"."+schedule.className);
-//  				
-//  			}
-//  		}
-//  		
-//  		
-//  		$scope.findSchedule = function(){
-//  			$http.get("http://localhost:8663/lesson/schedule/studentplan?classId=701").success(function(response){
-//  				schedule = response;
-//  				console.log(schedule);
-//  				
-//					
-//					$scope.newArr = group(schedule,7);
-//					console.log($scope.newArr);
-//					
-//					$scope.mon = $scope.newArr[0];
-//					$scope.tue = $scope.newArr[1];
-//					$scope.wedn = $scope.newArr[2];
-//					$scope.thu = $scope.newArr[3];
-//					$scope.fri = $scope.newArr[4];
-//								
-//
-//  			})
-//  		}
-//  		
-//  		$scope.divit = function(schedule){
-//  			
-//  				console.log(schedule);
-//  				
-//					
-//					$scope.newArr = group(schedule,7);
-//					console.log($scope.newArr);
-//					
-//					$scope.mon = $scope.newArr[0];
-//					$scope.tue = $scope.newArr[1];
-//					$scope.wedn = $scope.newArr[2];
-//					$scope.thu = $scope.newArr[3];
-//					$scope.fri = $scope.newArr[4];
-//  		}
-//  		
-//  		
-//  		function group(array, subGroupLength) {
-//		      let index = 0;
-//		      let newArray = [];
-//		      while(index < array.length) {
-//		          newArray.push(array.slice(index, index += subGroupLength));
-//		      }
-//		      return newArray;
-//		  }
-//  		
+    		$scope.name = ['courseId', 'classId', 'teacherId', 'courseName', 'courseSort', 'classHour', 'remark'];
+    		
+    		
+    		$scope.list = [{
+						    "courseId": "1",
+						    "classId": "101",
+						    "teacherId": "20160301",
+						    "courseName": "语文",
+						    "courseSort": "必修",
+						    "classHour": "96",
+						    "remark": null
+						  },
+						  {
+						    "courseId": "10",
+						    "classId": "101",
+						    "teacherId": "20160310",
+						    "courseName": "音乐",
+						    "courseSort": "必修",
+						    "classHour": "96",
+						    "remark": null
+						  }];
+    		
+    		
+    		$scope.findAll = function(){
+    			$http.get(URI + table +  "findAll").success(function(response){
+    				$scope.list = response;
+    			});
+    		}
+    		
+    		$scope.save = function(){
+    			console.log((status==1?"更新":"添加"));
+    			console.log($scope.entity);
+    			var op = "save";//默认为添加操作
+    			if(status==1){//如果状态为1，则为更新操作
+    				op = "update";
+    			}
+    			
+    			$http.post(URI + table + op ,$scope.entity).success(function(response){
+    				if(response){
+    					//成功操作之后，重新加载列表，然后把状态改为0，即默认是添加
+    					$scope.reloadList();
+    					status = 0;
+    				}else{
+    					alert("操作失败");
+    				}
+    			});
+    			
+    			
+    		}
+    		
+    		$scope.findOne = function(row){  //把整个对象传过去，根据部分信息查找单个
+    			//当点击修改时，根据id查找单个值，然后修改状态码为1，表示更新
+    			status = 1;
+    			console.log(row);
+    			console.log((status==1?"更新":"添加"));
+    			$http.post(URI + table + "findOne/" ,row).success(function(response){
+    				$scope.entity = response;
+    			});
+    		}
+    		
+    		$scope.changeStatusToAdd = function(){
+    			//点完修改之后，status变成1，如果取消修改，则把status变回0
+    			status = 0;
+    			console.log((status==1?"更新":"添加"));
+    		}
+    		
+    		
+    		$scope.paginationConf = {
+				currentPage : 1,
+				totalItems : 5,
+				itemsPerPage : 10,
+				perPageOptions : [5, 10, 20, 30, 40, 50 ],
+				onChange : function() {
+					$scope.reloadList();
+				}
+			};
+    		
+    		
+    		$scope.reloadList = function(){
+    			$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage);
+    		}
+    		
+    		$scope.findByPage = function(pageNo,pageSize){
+    			$http.get(URI + table + "findByPage?pageNo="+pageNo+"&pageSize="+pageSize).success(function(response){
+    				$scope.list = response.rows;
+    				$scope.paginationConf.totalItems = response.total;
+    			});
+    		}
+    		
+    		$scope.seletedIds = [];//存放被选中的Id
+    		$scope.selectUpdate = function(id,event){
+    			if(event.target.checked){
+    				console.log(id+"被选中...");
+    				//event是一个事件，当多选框被选中时或取消选中时发生的事件
+    				//event.target是发生事件的组件，即checkbox
+    				//event.target.checked是组件的checked属性，检查是否被选中
+    				$scope.seletedIds.push(id);
+    			}else{
+    				console.log(id+"取消选中...");
+    				var index = $scope.seletedIds.indexOf(id);
+    				$scope.seletedIds.splice(index,1);
+    			}
+    			console.log($scope.seletedIds);
+    		}
+    		
+    		$scope.delete = function(seletedIds){
+    			if(confirm("你确定要删除吗？")){
+	    			$http.get(URI + table + "deleteByIds?ids=" + $scope.seletedIds).success(function(response){
+	    				if(response){
+	    					$scope.reloadList();
+	    				}else{
+	    					alert("删除失败！")
+	    				}
+	    			});
+    			}
+ 
+    		}
+    		
     		
     	});
-    	
     	
     	
     </script>
 		
 		
 	</head>
-	<body class="hold-transition skin-red sidebar-mini" ng-app="ManualScheduleApp" ng-controller="ManualScheduleController" ng-init="findAllTeacher()">
+	<body class="hold-transition skin-red sidebar-mini" ng-app="CourseApp" ng-controller="CourseController">
 		<div class="box-header with-border">
-			<h3 class="box-title">排课任务列表</h3>
+			<h3 class="box-title">手动预排</h3>
 		</div>
 		
 		<div class="box-body">
 
 			
 			<div class="table-box">
-                
-                <!--查询栏-->
-                <div class="container center-block">
-				   <div class="row" >
-				      
-				      <div class="col-md-3 col-sm-9">
-				         <span>选择教师：</span>
-				      </div>
-				      <div class="col-md-9 col-sm-9">
-				        <select name="" class="form-control"  ng-model="teacherId" ng-options="teacher.teacherId as teacher.teacherName for teacher in teacherList">
-                			<option value=""></option>
-                		</select>
-				      </div>
-				      
-				      <div class="col-md-2 col-sm-2">
-						<input type="submit" value="排课任务列表" ng-click="selectCurriculum(teacherId)"/>				      	
-				      </div>
-					</div>
-				</div>
+				<!--
+                	描述：工具栏
+                	有三个按钮：添加/删除/刷新
+                -->
+                <div class="pull-left">
+                	<div class="form-group form-inline">
+                		<div class="btn-group">
+                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" ng-click="entity={}">添加</button>
+	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除</button>
+	                		<button type="button" class="btn btn-default" title="刷新">刷新</button>	
+                		</div>
+                	</div>
+                </div>
+                <!--工具栏-->
                 
                 
-                
-                <br/><br/><br/>
                 <!--
                 	作者：1521484428@qq.com
                 	时间：2019-10-15
                 	描述：数据表格
                 -->
-                <table class="table table-bordered 	">
+                <table class="table table-bordered table-striped table-hover	">
                 	<thead>
-                		<tr>
-                			<th>星期  / 时间</th>
-							<th ng-repeat="num in nums" class="thclass">{{num}}</th>
+                		<tr ng-model="title">
+							<th class="" style="padding-right:0px">
+	                              <input id="selall" type="checkbox" class="icheckbox_square-blue">
+	                          </th> 
+							<th ng-repeat="column in title">{{column}}</th>
+                			<th class="text-center">操作</th>
                 		</tr>
                 	</thead>
-                	<tbody id="Tbody">
-                		<tr id="mon">
-                			<th class="thclass">星期一</th>
-                			<td ng-repeat="num in mon" ng-click="AddOrDelSchedule(num)"></td>
-                			<!--<td class="one"></td>
-                			<td class="two"></td>
-                			<td class="three"></td>
-                			<td class="four"></td>
-                			<td class="five"></td>
-                			<td class="six"></td>
-                			<td class="seven"></td>-->
-                		</tr>
-                		<tr id="tue">
-                			<th class="thclass">星期二</th>
-                			<td class="one"></td>
-                			<td class="two"></td>
-                			<td class="three"></td>
-                			<td class="four"></td>
-                			<td class="five"></td>
-                			<td class="six"></td>
-                			<td class="seven"></td>
-                		</tr>
-                		<tr id="wedn">
-                			<th class="thclass">星期三</th>
-                			<td class="one"></td>
-                			<td class="two"></td>
-                			<td class="three"></td>
-                			<td class="four"></td>
-                			<td class="five"></td>
-                			<td class="six"></td>
-                			<td class="seven"></td>
-                		</tr>
-                		<tr id="thu">
-                			<th class="thclass">星期四</th>
-                			<td class="one"></td>
-                			<td class="two"></td>
-                			<td class="three"></td>
-                			<td class="four"></td>
-                			<td class="five"></td>
-                			<td class="six"></td>
-                			<td class="seven"></td>
-                		</tr>
-                		<tr id="fir">
-                			<th class="thclass">星期五</th>
-                			<td class="one"></td>
-                			<td class="two"></td>
-                			<td class="three"></td>
-                			<td class="four"></td>
-                			<td class="five"></td>
-                			<td class="six"></td>
-                			<td class="seven"></td>
+                	
+                	<tbody>
+                		<tr ng-repeat="row in list">
+                			<!--'courseId', 'classId', 'teacherId', 'courseName', 'courseSort', 'classHour', 'remark'-->
+                			<td><input  type="checkbox" ng-click="selectUpdate(row.courseId,$event)"></td>
+                			<td>{{row.courseId}}</td>
+                			<td>{{row.classId}}</td>
+                			<td>{{row.teacherId}}</td>
+                			<td>{{row.courseName}}</td>
+                			<td>{{row.courseSort}}</td>
+                			<td>{{row.classHour}}</td>
+                			<td>{{row.remark}}</td>
+                			<td class="text-center">                                           
+		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">修改</button>                                           
+		                  </td>
                 		</tr>
                 	</tbody>
                 </table>
                 <!--数据表格-->
+                <tm-pagination conf="paginationConf"></tm-pagination>
                 
 			</div>
 			<!--table-box-->
 			
 		</div>
 		<!--box-body-->
+		
+		<!-- 模态框（Modal） -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
+		  	 aria-labelledby="myModalLabel" aria-hidden="true">
+			   <div class="modal-dialog">
+			      <div class="modal-content">
+			        <div class="modal-header">
+        		 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+        		 		<h4 class="modal-title" id="myModalLabel">手动预排</h4>
+        		 		<h3 id="myModalLabel">添加课程</h3>
+        		 	</div>
+        		 	<div class="modal-body">		
+						<table class="table table-bordered table-striped"  width="800px">
+							<tr>
+					      		<td>课程Id</td>
+					      		<td><input  class="form-control" placeholder="课程Id" ng-model="entity.courseId">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>班级Id</td>
+					      		<td><input  class="form-control" placeholder="班级Id" ng-model="entity.classId">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>教师Id</td>
+					      		<td><input  class="form-control" placeholder="教师Id" ng-model="entity.teacherId">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>课程名称代码</td>
+					      		<td><input  class="form-control" placeholder="课程名称代码" ng-model="entity.courseName">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>课程权重</td>
+					      		<td><input  class="form-control" placeholder="课程权重" ng-model="entity.courseSort">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>学时</td>
+					      		<td><input  class="form-control" placeholder="学时" ng-model="entity.classHour">  </td>
+					      	</tr>
+					      	<tr>
+					      		<td>课程名称</td>
+					      		<td><input  class="form-control" placeholder="课程名称" ng-model="entity.remark">  </td>
+					      	</tr>
+						 </table>				
+					</div>
+					<div class="modal-footer">						
+						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="save()">保存</button>
+						<button class="btn btn-default" data-dismiss="modal" aria-hidden="true" ng-click="changeStatusToAdd()">关闭</button>
+					</div>
+        		 </div>
+        	</div>
+        </div>
+        <!--编辑框-->
+		
+		
 	
 		
 	</body>

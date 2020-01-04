@@ -29,103 +29,31 @@
     		$scope.name = ['id', 'scheduleId', 'grade', 'status'];
     		
     		
-    		
-    		
-    		
     		$scope.findAll = function(){
     			$http.get(URI + table +  "findAllTask").success(function(response){
     				$scope.list = response;
     			});
     		}
     		
-//  		$scope.save = function(){
-//  			console.log((status==1?"更新":"创建任务"));
-//  			console.log($scope.entity);
-//  			var op = "save";//默认为创建任务操作
-//  			if(status==1){//如果状态为1，则为更新操作
-//  				op = "update";
-//  			}
-//  			
-//  			$http.post(URI + table + op ,$scope.entity).success(function(response){
-//  				if(response){
-//  					//成功操作之后，重新加载列表，然后把状态改为0，即默认是创建任务
-//  					$scope.reloadList();
-//  					status = 0;
-//  				}else{
-//  					alert("操作失败");
-//  				}
-//  			});
-//  			
-//  			
-//  		}
-//  		
-//  		$scope.findOne = function(row){  //把整个对象传过去，根据部分信息查找单个
-//  			//当点击修改时，根据id查找单个值，然后修改状态码为1，表示更新
-//  			status = 1;
-//  			console.log(row);
-//  			console.log((status==1?"更新":"创建任务"));
-//  			$http.post(URI + table + "findOne/" ,row).success(function(response){
-//  				$scope.entity = response;
-//  			});
-//  		}
-//  		
-//  		$scope.changeStatusToAdd = function(){
-//  			//点完修改之后，status变成1，如果取消修改，则把status变回0
-//  			status = 0;
-//  			console.log((status==1?"更新":"创建任务"));
-//  		}
-//  		
-//  		
-//  		$scope.paginationConf = {
-//				currentPage : 1,
-//				totalItems : 5,
-//				itemsPerPage : 10,
-//				perPageOptions : [5, 10, 20, 30, 40, 50 ],
-//				onChange : function() {
-//					$scope.reloadList();
-//				}
-//			};
-//  		
-//  		
-//  		$scope.reloadList = function(){
-//  			$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage);
-//  		}
-//  		
-//  		$scope.findByPage = function(pageNo,pageSize){
-//  			$http.get(URI + table + "findByPage?pageNo="+pageNo+"&pageSize="+pageSize).success(function(response){
-//  				$scope.list = response.rows;
-//  				$scope.paginationConf.totalItems = response.total;
-//  			});
-//  		}
+			$scope.text = ["未排课","排课完成"];
+			
+			$scope.schedule = function(grade,status){
+				console.log(grade);
+				if(status==1){
+					alert("排课任务已完成！");
+				}else{
+					$http.get(URI + "schedule/scheduleCondition?grade=" + grade).success(
+						function(response){
+							$scope.findAll();
+						}
+					);
+				}
+				
+			}
+			
+			
     		
-//  		$scope.seletedIds = [];//存放被选中的Id
-//  		$scope.selectUpdate = function(id,event){
-//  			if(event.target.checked){
-//  				console.log(id+"被选中...");
-//  				//event是一个事件，当多选框被选中时或取消选中时发生的事件
-//  				//event.target是发生事件的组件，即checkbox
-//  				//event.target.checked是组件的checked属性，检查是否被选中
-//  				$scope.seletedIds.push(id);
-//  			}else{
-//  				console.log(id+"取消选中...");
-//  				var index = $scope.seletedIds.indexOf(id);
-//  				$scope.seletedIds.splice(index,1);
-//  			}
-//  			console.log($scope.seletedIds);
-//  		}
-//  		
-//  		$scope.delete = function(seletedIds){
-//  			if(confirm("你确定要删除吗？")){
-//	    			$http.get(URI + table + "deleteByIds?ids=" + $scope.seletedIds).success(function(response){
-//	    				if(response){
-//	    					$scope.reloadList();
-//	    				}else{
-//	    					alert("删除失败！")
-//	    				}
-//	    			});
-//  			}
-// 
-//  		}
+//  		$scope.viewSchedule = function(grade)
     		
     		
     	});
@@ -140,7 +68,7 @@
 			<h3 class="box-title">排课任务列表</h3>
 		</div>
 		
-		<form class="form-inline" role="form">
+		<!--<form class="form-inline" role="form">
 		   <div class="form-group">
 		      <label for="name">学期</label>
 		      <input type="text" class="form-control" id="name" 
@@ -150,7 +78,7 @@
 		      <input type="text" placeholder="请搜索任务编号">
 		   </div>
 		   <button type="submit" class="btn btn-default">查询</button>
-		</form>
+		</form>-->
 		
 		
 		<div class="box-body">
@@ -196,10 +124,10 @@
                 			<td>{{row.id}}</td>
                 			<td>{{row.scheduleId}}</td>
                 			<td>{{row.grade}}</td>
-                			<td>{{row.status}}</td>
+                			<td>{{text[row.status]}}</td>
                 			<td class="text-center">                                           
-		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">修改</button>                                           
-		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">删除</button>
+		                 	  <!--<button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="viewSchedule(row.grade)">查看课表</button>-->                                           
+		                 	  <button type="button" class="btn bg-olive btn-xs"  ng-click="schedule(row.grade,row.status)">开始排课</button>
 		                  </td>
                 		</tr>
                 	</tbody>
@@ -240,18 +168,6 @@
 					      	<tr>
 					      		<td>排课状态</td>
 					      		<td><input  class="form-control" placeholder="排课状态" ng-model="entity.status">  </td>
-					      	</tr>
-					      	<tr>
-					      		<td>课程权重</td>
-					      		<td><input  class="form-control" placeholder="课程权重" ng-model="entity.courseSort">  </td>
-					      	</tr>
-					      	<tr>
-					      		<td>学时</td>
-					      		<td><input  class="form-control" placeholder="学时" ng-model="entity.classHour">  </td>
-					      	</tr>
-					      	<tr>
-					      		<td>课程名称</td>
-					      		<td><input  class="form-control" placeholder="课程名称" ng-model="entity.remark">  </td>
 					      	</tr>
 						 </table>				
 					</div>
