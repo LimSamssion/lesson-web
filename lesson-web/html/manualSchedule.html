@@ -96,7 +96,7 @@
     		$scope.paginationConf = {
 				currentPage : 1,
 				totalItems : 5,
-				itemsPerPage : 10,
+				itemsPerPage : 5,
 				perPageOptions : [5, 10, 20, 30, 40, 50 ],
 				onChange : function() {
 					$scope.reloadList();
@@ -158,8 +158,6 @@
 		</div>
 		
 		<div class="box-body">
-
-			
 			<div class="table-box">
 				<!--
                 	描述：工具栏
@@ -170,14 +168,13 @@
                 		<div class="btn-group">
                 			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" ng-click="entity={}">添加</button>
 	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除</button>
-	                		<button type="button" class="btn btn-default" title="刷新">刷新</button>	
+	                		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">刷新</button>	
                 		</div>
                 	</div>
                 </div>
                 <!--工具栏-->
-                
-                
-                <!--
+
+				<!--
                 	作者：1521484428@qq.com
                 	时间：2019-10-15
                 	描述：数据表格
@@ -212,10 +209,8 @@
                 </table>
                 <!--数据表格-->
                 <tm-pagination conf="paginationConf"></tm-pagination>
-                
 			</div>
 			<!--table-box-->
-			
 		</div>
 		<!--box-body-->
 		

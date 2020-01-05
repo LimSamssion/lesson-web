@@ -2,13 +2,13 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>排课任务列表</title>
+		<title>手动预排</title>
 		<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="../dist/css/AdminLTE.min.css" />
 		<style type="text/css">
 			td:hover{
 				background-color: ghostwhite;
-				cursor: pointer;
+				/*cursor: pointer;*/
 				border: #00733E 2px;
 				
 			}
@@ -28,20 +28,22 @@
 		<!--angular.min.js-->
 		<script src="../bower_components/angularjs/angular.min.js"></script>
 		
-		<script>
+		<!--<script>
 			//jquery代码
 			$(document).ready(function(){
-				$("td").mousemove(function(){
+				$("#schedule tr td").mousemove(function(){
 					this.title = "点击添加/删除课程";
 				})
 			});
 			
-		</script>
+		</script>-->
 		
 		<script type="text/javascript">
     	var app = angular.module("ManualScheduleApp",[]);
     	var URI = "http://localhost:8663/lesson/";
     	app.controller("ManualScheduleController",function($scope,$http){		
+    		//标题数组
+    		$scope.title = ['班级Id', '星期', '节数','timeId', '课程','教师'];
     		
 			$scope.nums = ['第一节','第二节','第三节','第四节','第五节','第六节','第七节'];
 			
@@ -58,8 +60,8 @@
 			
 			$scope.scheduleList = [];
 			
-			//初始化一个entity，用于存放课程对象
-			$scope.entity = {classId:701,timeId:"",teacherId:"",remark:"",teacherName:""};
+			//初始化一个entity，用于存放课程对象，保存该对象之后，存放到t_preschedule表中
+			$scope.entity = {classId:"",timeId:"",teacherId:"",remark:"",teacherName:""};
 			
 			$scope.saveTimeId = function(timeId){
 				$scope.entity.timeId = timeId;
@@ -116,7 +118,32 @@
 //				$scope.testList.splice(10,1);
 //				console.log($scope.testList);
 //			}
-//		
+		
+			//查找所有年级
+			$scope.findgrade = function(){
+//  			alert("findgrade...");
+    			$http.get(URI + "class/findgrade").success(function(response){
+    				$scope.grade = response;
+    				console.log($scope.grade);
+    			})
+    		}
+			
+			//当下拉框的年级发生改变时，调用该函数，查出该年级所有的班别
+    		$scope.classChange = function(grade){
+//  			alert("查询年级变为："+grade);
+				$http.get(URI + "class/findclass/" + grade).success(function(response){
+					$scope.classInfo = response;
+					console.log($scope.classInfo);
+				})
+    			
+    		}
+    		
+    		//班级发生改变，查询出当前班级的预排课数据
+    		$scope.classNumChange = function(){
+//  			alert($scope.classNum);
+    		}
+    		
+		
     		
     	});
     	
@@ -126,46 +153,116 @@
 		
 		
 	</head>
-	<body class="hold-transition skin-red sidebar-mini" ng-app="ManualScheduleApp" ng-controller="ManualScheduleController" ng-init="findAllTeacher();findAllClass();findAllClassroom()">
+	<body class="hold-transition skin-red sidebar-mini" ng-app="ManualScheduleApp" ng-controller="ManualScheduleController" ng-init="findgrade();findAllTeacher();findAllClass();findAllClassroom()">
 		<div class="box-header with-border">
-			<h3 class="box-title">排课任务列表</h3>
+			<h3 class="box-title">手动预排</h3>
 		</div>
 		
-		<input type="button" value="测试方法" ng-click="test()" />
+		<!--<input type="button" value="测试方法" ng-click="test()" />-->
 		
 		<div class="box-body">
 
 			
+			<!--添加、删除预排的课程-->
 			<div class="table-box">
                 
                 <!--查询栏-->
                 <div class="container center-block">
 				   <div class="row" >
 				      
-				      <div class="col-md-3 col-sm-9">
-				         <span>选择教师：</span>
+				      <div class="col-md-2 col-sm-2">
+				         <span>选择年级：</span>
 				      </div>
-				      <div class="col-md-9 col-sm-9">
-				        <select name="" class="form-control" ng-model="teacherId" ng-options="teacher.teacherId as teacher.teacherName for teacher in teacherList">
+				      <div class="col-md-3 col-sm-3">
+				        <select name="" class="form-control"  ng-model="selectGrade" ng-options="op for op in grade" ng-change="classChange(selectGrade)">
                 			<option value=""></option>
                 		</select>
 				      </div>
 				      
 				      <div class="col-md-2 col-sm-2">
-						<input type="submit" value="排课任务列表" ng-click="selectCurriculum(teacherId)"/>				      	
+				         <span>选择班级：</span>
+				      </div>
+				      <div class="col-md-3 col-sm-3">
+				        <select name="" class="form-control"  ng-model="classNum" ng-options="class.classId as class.className for class in classInfo"
+				        		ng-change="classNumChange()">
+                			<option value=""></option>
+                		</select>
+				      </div>
+				      
+				      <div class="col-md-2 col-sm-2">
+						<input type="submit" value="开始排课" ng-click="selectCurriculum(teacherId)"/>				      	
 				      </div>
 					</div>
 				</div>
-                
-                
-                
                 <br/><br/><br/>
+                
+                <div class="box-body">
+			<div class="table-box">
+				<!--
+                	描述：工具栏
+                	有三个按钮：添加/删除/刷新
+                -->
+                <div class="pull-left">
+                	<div class="form-group form-inline">
+                		<p class="text-danger">添加预排前请先选择年级和班级，否则会添加失败！</p>
+                		<div class="btn-group">
+                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" ng-click="entity={}">添加预排</button>
+	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除预排</button>
+	                		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">刷新</button>	
+                		</div>
+                	</div>
+                </div>
+                <!--工具栏-->
+
+				<!--
+                	作者：1521484428@qq.com
+                	时间：2019-10-15
+                	描述：数据表格
+                -->
+                <table class="table table-bordered table-striped table-hover	">
+                	<thead>
+                		<tr ng-model="title">
+							<th class="" style="padding-right:0px">
+	                              <input id="selall" type="checkbox" class="icheckbox_square-blue">
+	                          </th> 
+							<th ng-repeat="column in title">{{column}}</th>
+                			<th class="text-center">操作</th>
+                		</tr>
+                	</thead>
+                	
+                	<tbody>
+                		<tr ng-repeat="row in list">
+                			<!--'courseId', 'classId', 'teacherId', 'courseName', 'courseSort', 'classHour', 'remark'-->
+                			<td><input  type="checkbox" ng-click="selectUpdate(row.courseId,$event)"></td>
+                			<td>{{row.courseId}}</td>
+                			<td>{{row.classId}}</td>
+                			<td>{{row.teacherId}}</td>
+                			<td>{{row.courseName}}</td>
+                			<td>{{row.courseSort}}</td>
+                			<td>{{row.classHour}}</td>
+                			<td>{{row.remark}}</td>
+                			<td class="text-center">                                           
+		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">修改</button>                                           
+		                  </td>
+                		</tr>
+                	</tbody>
+                </table>
+                <!--数据表格-->
+                <tm-pagination conf="paginationConf"></tm-pagination>
+			</div>
+			<!--table-box-->
+		</div>
+		<!--box-body-->
+                
+                
+                
+                
                 <!--
                 	作者：1521484428@qq.com
                 	时间：2019-10-15
                 	描述：数据表格
                 -->
-                <table class="table table-bordered 	">
+                <table id="schedule" class="table table-bordered ">
                 	<thead>
                 		<tr>
                 			<th>星期  / 时间</th>
@@ -229,9 +326,7 @@
                 	</tbody>
                 </table>
                 <!--数据表格-->
-                <td class="text-center">                                           
-					<button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">修改</button>                                           
-				</td>
+                
                 
 			</div>
 			<!--table-box-->
@@ -265,6 +360,23 @@
 			                		</select>
 					      		</td>
 					      	</tr>-->
+					      	<tr>
+					      		<td>班级Id</td>
+					      		<td ng-model="entity.classId">{{classNum}}</td>
+					      	</tr>
+					      	<tr>
+					      		<td>星期</td>
+					      		<td ng-model="entity.classId">{{classNum}}</td>
+					      	</tr>
+					      	<tr>
+					      		<td>节数</td>
+					      		<td ng-model="entity.classId">{{classNum}}</td>
+					      	</tr>
+					      	<tr>
+					      		<!--<td>节次</td>-->
+					      		<!--<td><input  class="form-control" placeholder="课程" ng-model="entity.email">  </td>-->
+					      		<td ng-model="entity.timeId">{{classNum}}</td>
+					      	</tr>
 					      	<tr>
 					      		<td>课程</td>
 					      		<!--<td><input  class="form-control" placeholder="课程" ng-model="entity.email">  </td>-->
