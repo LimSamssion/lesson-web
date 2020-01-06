@@ -42,12 +42,6 @@
 			$scope.nums = ['第一节','第二节','第三节','第四节','第五节','第六节','第七节'];
 			
 			$scope.transferWeek = {'mon':'星期一','tue':'星期二','wed':'星期三','thu':'星期四','fri':'星期五'};
-//			$scope.transferWeek['mon'] = "星期一";
-//			$scope.transferWeek['tue'] = "星期二";
-//			$scope.transferWeek['wed'] = "星期三";
-//			$scope.transferWeek['thu'] = "星期四";
-//			$scope.transferWeek['fri'] = "星期五";
-			
 			
 			//初始化一个entity，用于存放课程对象，保存该对象之后，存放到t_preschedule表中
 			//remark是课程名
@@ -166,7 +160,7 @@
     			console.log($scope.entity);
     		}
     		
-    		//添加预排课程信息
+    		//添加/修改预排课程信息
     		$scope.addPreSchedule = function(entity){
     			console.log("保存entity：");
     			console.log(entity);
@@ -176,6 +170,18 @@
     				}
     			);
     		}
+    		
+    		//添加/修改预排前，检查是否选择班级
+    		$scope.checkClassNum = function(classNum){
+    			console.log("checkClassNum:"+classNum);
+    			if(typeof classNum == "undefined"){
+    				alert("请先选择年级和班级！");
+    			}else{
+    				$("#add").click();
+    			}
+    			
+    		}
+    		
     		
     		//存放预排课表信息的数组
     		$scope.prescheduleList = [];
@@ -212,6 +218,49 @@
     			
     		}
     		
+    		//查询单个预排信息
+//  		$scope.findOne = function(id){
+//  			$http.get(URI + "preschedule/findOne?id="+id).success(
+//  				function(response){
+//  					$scope.entity = response;
+//  					console.log("findOne:");
+//  					console.log($scope.entity);
+//  				}
+//  			);
+//  		}
+
+			//定义一个数组，存放所有要被删除的预排信息的id
+			$scope.ids = [];
+			//更新数组
+			$scope.selectUpdate = function(id,event){
+				if(event.target.checked){
+					//被选中
+					console.log(id+"被选中，加入数组..");
+					$scope.ids.push(id);
+					console.log($scope.ids);
+				}else{
+					console.log(id+"取消选中，移出数组...")
+					var index = $scope.ids.indexOf(id);
+					$scope.ids.splice(index,1);
+					console.log($scope.ids);
+				}
+			}
+			
+			//批量删除
+			$scope.delete = function(ids){
+				$http.get(URI + "preschedule/delete?ids="+ids).success(
+					function(response){
+						$scope.reloadList();
+					}
+				);
+			}
+    		
+    		
+    		
+    		
+    		
+    		
+    		//------------------------------------------------------------------
     		
     		//开始排课
     		$scope.schedule = function(){
@@ -221,6 +270,8 @@
     				}
     			);
     		}
+    		
+    		
     		
     		
 		
@@ -262,13 +313,12 @@
             		</select>
 			      </div>
 			      
-			      <div class="col-md-2 col-sm-2">
+			      <!--<div class="col-md-2 col-sm-2">
 					<input type="submit" value="开始排课" ng-click="schedule()"/>				      	
-			      </div>
+			      </div>-->
 				</div>
 			</div>
 			<!--查询栏-->
-            <br/><br/><br/>
 		</div>
 		<!--box-body1-->
 		
@@ -277,18 +327,18 @@
 		    <div class="table-box">
                 <div class="pull-left">
                 	<div class="form-group form-inline">
-                		<p class="text-danger">添加预排前请先选择年级和班级，否则会添加失败！</p>
+                		<p class="text-danger">添加/修改预排前请先&nbsp;&nbsp;<b>选择年级</b>&nbsp;&nbsp;和&nbsp;&nbsp;<b>选择班级</b>，&nbsp;&nbsp;否则会添加失败！</p>
                 		<div class="btn-group">
-                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" 
-                					ng-init="findAllTeacher();findWeek();" ng-click="entity={};dayChange('');findTeacherByCourse('')">添加预排</button>
-	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除预排</button>
-	                		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">刷新</button>	
+                			<button type="button" class="btn btn-default" title="添加" ng-click="checkClassNum(classNum);">添加/修改预排</button>
+                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" ng-show="false" id="add"
+                					ng-init="findAllTeacher();findWeek();" ng-click="entity={};dayChange('');findTeacherByCourse('')"></button>
+	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(ids)">删除预排</button>
                 		</div>
                 	</div>
                 </div>
                 <!--工具栏-->
 
-				<!--添加预排，删除预排的表格-->
+				<!--添加/修改预排，删除预排的表格-->
                 <table class="table table-bordered table-striped table-hover	">
                 	<thead>
                 		<tr ng-model="title">
@@ -296,22 +346,22 @@
 	                              <input id="selall" type="checkbox" class="icheckbox_square-blue">
 	                          </th> 
 							<th ng-repeat="column in title">{{column}}</th>
-                			<th class="text-center">操作</th>
+                			<!--<th class="text-center">操作</th>-->
                 		</tr>
                 	</thead>
                 	
                 	<tbody>
                 		<tr ng-repeat="row in prescheduleList">
-                			<td><input  type="checkbox" ng-click="selectUpdate(row.courseId,$event)"></td>
+                			<td><input  type="checkbox" ng-click="selectUpdate(row.id,$event)"></td>
                 			<td>{{row.id}}</td>
                 			<td>{{row.classId}}</td>
                 			<td>{{transferWeek[row.day]}}</td>
                 			<td>{{row.hour}}</td>
                 			<td>{{row.remark}}</td><!--课程名-->
                 			<td>{{row.teacherName}}</td>
-                			<td class="text-center">                                           
-		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">修改</button>                                           
-		                  </td>
+                			<!--<td class="text-center">                                           
+		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row.id)">修改</button>                                           
+		                  </td>-->
                 		</tr>
                 	</tbody>
                 </table>
@@ -322,12 +372,14 @@
 		</div>
 		<!--box-body2-->
 		
+		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">查看所有班级的预排信息</button>	
+		<button type="button" class="btn btn-default" title="开始排课" ng-click="schedule();">开始排课</button>
 		
 		
-		<div class="box-body">
+		<!--<div class="box-body">
 			<div class="table-box">
 
-				<!--显示课表的表格-->
+				显示课表的表格
                 <table id="schedule" class="table table-bordered ">
                 	<thead>
                 		<tr>
@@ -388,10 +440,10 @@
                 		</tr>
                 	</tbody>
                 </table>
-                <!--数据表格-->
+                数据表格
 			</div>
-			<!--table-box-->
-		</div>
+			table-box
+		</div>-->
 		<!--box-body3-->
 		
 		<!-- 模态框（Modal） -->
@@ -402,7 +454,7 @@
 			        <div class="modal-header">
         		 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
         		 		<h4 class="modal-title" id="myModalLabel">排课管理</h4>
-        		 		<h3 id="myModalLabel">添加课程</h3>
+        		 		<h3 id="myModalLabel">添加/修改预排</h3>
         		 	</div>
         		 	<div class="modal-body">		
 						<table class="table table-bordered table-striped"  width="800px">
@@ -462,7 +514,5 @@
         	</div>
         </div>
         <!--编辑框-->
-	
-		
 	</body>
 </html>
