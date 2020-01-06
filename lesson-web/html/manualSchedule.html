@@ -16,169 +16,295 @@
 		<!--分页插件-->
 		<script type="text/javascript" src="../bower_components/angularjs/pagination.js"></script>
 		
+		<!--课程表的样式-->
+		<style type="text/css">
+			td:hover{
+				background-color: ghostwhite;
+				/*cursor: pointer;*/
+				border: #00733E 2px;
+				
+			}
+			th td{
+				margin: 5px;
+			}
+			th.thclass{
+				background-color: ghostwhite;
+			}
+		</style>
+		
 		<script type="text/javascript">
-    	
-    	var app = angular.module("CourseApp",['pagination']);
+    	var app = angular.module("ManualScheduleApp",["pagination"]);
     	var URI = "http://localhost:8663/lesson/";
-    	var table = "course/";
-    	//定义一个状态码，0表示添加，1表示更新
-    	var status = 0;
-    	app.controller("CourseController",function($scope,$http){
-    		$scope.title = ['课程Id', '班级Id', '教师Id', '课程名称代码', '课程权重', '学时', '课程名称'];
-    		
-    		$scope.name = ['courseId', 'classId', 'teacherId', 'courseName', 'courseSort', 'classHour', 'remark'];
-    		
-    		
-    		$scope.list = [{
-						    "courseId": "1",
-						    "classId": "101",
-						    "teacherId": "20160301",
-						    "courseName": "语文",
-						    "courseSort": "必修",
-						    "classHour": "96",
-						    "remark": null
-						  },
-						  {
-						    "courseId": "10",
-						    "classId": "101",
-						    "teacherId": "20160310",
-						    "courseName": "音乐",
-						    "courseSort": "必修",
-						    "classHour": "96",
-						    "remark": null
-						  }];
-    		
-    		
-    		$scope.findAll = function(){
-    			$http.get(URI + table +  "findAll").success(function(response){
-    				$scope.list = response;
-    			});
+    	app.controller("ManualScheduleController",function($scope,$http){		
+    		//标题数组
+    		$scope.title = ['id','班级Id', '星期', '节数', '课程','教师'];
+    		//节数的数组
+			$scope.nums = ['第一节','第二节','第三节','第四节','第五节','第六节','第七节'];
+			
+			$scope.transferWeek = {'mon':'星期一','tue':'星期二','wed':'星期三','thu':'星期四','fri':'星期五'};
+//			$scope.transferWeek['mon'] = "星期一";
+//			$scope.transferWeek['tue'] = "星期二";
+//			$scope.transferWeek['wed'] = "星期三";
+//			$scope.transferWeek['thu'] = "星期四";
+//			$scope.transferWeek['fri'] = "星期五";
+			
+			
+			//初始化一个entity，用于存放课程对象，保存该对象之后，存放到t_preschedule表中
+			//remark是课程名
+			$scope.entity = {classId:"",day:"",hour:"",timeId:"",remark:"",teacherId:""};
+			
+			
+		
+			//查找所有年级
+			$scope.findgrade = function(){
+//  			alert("findgrade...");
+    			$http.get(URI + "class/findgrade").success(function(response){
+    				$scope.grade = response;
+    				console.log($scope.grade);
+    			})
+    		}
+			
+			//当下拉框的年级发生改变时，调用该函数，查出该年级所有的班别
+    		$scope.classChange = function(grade){
+//  			alert("查询年级变为："+grade);
+				$http.get(URI + "class/findclass/" + grade).success(function(response){
+					$scope.classInfo = response;
+					console.log($scope.classInfo);
+				})
+    			
     		}
     		
-    		$scope.save = function(){
-    			console.log((status==1?"更新":"添加"));
-    			console.log($scope.entity);
-    			var op = "save";//默认为添加操作
-    			if(status==1){//如果状态为1，则为更新操作
-    				op = "update";
-    			}
+    		//班级Id发送变化时
+    		$scope.classNumChange = function(classId){
+    			console.log("function classNumChange :  classId="+classId)
+    			//1、将班级Id保存到entity中
+				//$scope.entity.classId = classId;
     			
-    			$http.post(URI + table + op ,$scope.entity).success(function(response){
-    				if(response){
-    					//成功操作之后，重新加载列表，然后把状态改为0，即默认是添加
-    					$scope.reloadList();
-    					status = 0;
-    				}else{
-    					alert("操作失败");
+    			//2、调用通过班级Id查询改班级所开设课程的方法
+    			$scope.findCourseByClassId(classId);
+    			
+    			//3、调用分页查询某个班的预排课表的方法
+    			$scope.reloadList();
+    			
+    		}
+    		
+    		//查找周一到周日
+    		$scope.findWeek = function(){
+    			$http.get(URI + "time/findDinstinctDay").success(
+    				function(response){
+    					$scope.week = response;
     				}
-    			});
+    			);
+    		}
+    		
+    		///根据传入的周一到周日，返回当天的第一到第七节的时间
+    		$scope.dayChange = function(day){
+    			console.log(day);
+    			$http.get(URI + "time/findTimeByDay?day="+day).success(
+    				function(response){
+    					$scope.timeList = response;
+    				}
+    			);
+    		}
+    		
+    		//当选择好时间点，将时间点保存到entity
+    		$scope.saveTimeToEntity = function(time){
+    			console.log(time);
+    			$scope.entity.hour = time.hour;
+    			$scope.entity.timeId = time.timeId;
+    			console.log($scope.entity);
+    		}
+    		
+    		//通过班级Id,查询该班级开设的课程
+    		$scope.findCourseByClassId = function(classId){
+    			console.log(classId);
+    			$http.get(URI + "course/findDistinctCourseNameByClassId?classId="+classId).success(
+    				function(response){
+    					$scope.courseList = response;
+    				}
+    			);
+    		}
+    		
+    		//通过Course条件，查找某个班级某门课程的所有任课老师
+    		$scope.findTeacherByCourse = function(courseName){
+    			console.log(courseName);
+    			//创建一个TCourse条件对象，封装classId和课程名
+    			$scope.tCourse = {classId:"",remark:""};
+    			$scope.tCourse.classId = $scope.classNum;
+    			$scope.tCourse.remark = courseName;
+    			console.log($scope.tCourse);
     			
+    			//将classId的值保存到entity中
+    			$scope.entity.classId = $scope.classNum;
+    			
+    			$http.post(URI + "course/findTeacherByCourse",$scope.tCourse).success(
+    				function(response){
+    					$scope.teacherList = response;	
+    				}
+    			);
     			
     		}
     		
-    		$scope.findOne = function(row){  //把整个对象传过去，根据部分信息查找单个
-    			//当点击修改时，根据id查找单个值，然后修改状态码为1，表示更新
-    			status = 1;
-    			console.log(row);
-    			console.log((status==1?"更新":"添加"));
-    			$http.post(URI + table + "findOne/" ,row).success(function(response){
-    				$scope.entity = response;
-    			});
-    		}
-    		
-    		$scope.changeStatusToAdd = function(){
-    			//点完修改之后，status变成1，如果取消修改，则把status变回0
-    			status = 0;
-    			console.log((status==1?"更新":"添加"));
-    		}
-    		
+    		//-----------------------------------------------------------------------------
     		
     		$scope.paginationConf = {
 				currentPage : 1,
 				totalItems : 5,
 				itemsPerPage : 5,
-				perPageOptions : [5, 10, 20, 30, 40, 50 ],
+				perPageOptions : [5, 10 ],
 				onChange : function() {
 					$scope.reloadList();
 				}
 			};
     		
+    		//将老师信息保存到entity中
+    		$scope.saveTeacherToEntity = function(teacher){
+    			console.log(teacher);
+    			$scope.entity.teacherId = teacher.teacherId;
+    			$scope.entity.teacherName = teacher.teacherName;
+    			console.log("最终的entity：")
+    			console.log($scope.entity);
+    		}
     		
+    		//添加预排课程信息
+    		$scope.addPreSchedule = function(entity){
+    			console.log("保存entity：");
+    			console.log(entity);
+    			$http.post(URI + "preschedule/save",entity).success(
+    				function(response){
+    					$scope.reloadList();
+    				}
+    			);
+    		}
+    		
+    		//存放预排课表信息的数组
+    		$scope.prescheduleList = [];
+    		//查询预排课程信息
+    		$scope.findByPage = function(pageNo,pageSize,classId){
+    			$http.get(URI + "preschedule/findByPage?pageNo="+pageNo+"&pageSize="+pageSize+"&classId="+classId).success(
+    				function(response){
+    					$scope.prescheduleList = response.rows;
+    					$scope.paginationConf.totalItems = response.total;
+    					//动态加载预排课信息到课程表
+    					$scope.loadToTable($scope.prescheduleList);
+    				}
+    			);
+    		}
+    		
+    		//页面信息发生改变时调用的函数
     		$scope.reloadList = function(){
-    			$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage);
+    			$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage,$scope.classNum);
     		}
     		
-    		$scope.findByPage = function(pageNo,pageSize){
-    			$http.get(URI + table + "findByPage?pageNo="+pageNo+"&pageSize="+pageSize).success(function(response){
-    				$scope.list = response.rows;
-    				$scope.paginationConf.totalItems = response.total;
-    			});
-    		}
-    		
-    		$scope.seletedIds = [];//存放被选中的Id
-    		$scope.selectUpdate = function(id,event){
-    			if(event.target.checked){
-    				console.log(id+"被选中...");
-    				//event是一个事件，当多选框被选中时或取消选中时发生的事件
-    				//event.target是发生事件的组件，即checkbox
-    				//event.target.checked是组件的checked属性，检查是否被选中
-    				$scope.seletedIds.push(id);
-    			}else{
-    				console.log(id+"取消选中...");
-    				var index = $scope.seletedIds.indexOf(id);
-    				$scope.seletedIds.splice(index,1);
+    		//查找指定的课程，填到对应课程表中的位置
+    		$scope.loadToTable = function(list){
+    			//定义空的预排信息
+    			var emptyPreSchedule = 
+									     {
+									      "id": null,
+									      "scheduleId": null,
+									      "classId": null,
+									      "classroomId": null,
+									      "courseId": null,
+									      "teacherId": null,
+									      "timeId": null,
+									      "remark": null,
+									      "className": null,
+									      "place": null,
+									      "courseName": null,
+									      "teacherName": null,
+									      "day": null,
+									      "hour": null
+									    };
+									    
+    			console.log(list);
+    			var k = 1;
+    			for (var i = 0; i < list.length; i++) {
+    				var preSchedule = list[i];
+    				var timeId = preSchedule.timeId;
+    				
+    				console.log(preSchedule.timeId);
+//  				while(k!=timeId){
+//  					$scope.prescheduleList[k-1]=emptyPreSchedule;
+//  					k++;
+//  				}
+//  				$scope.prescheduleList[timeId-1] = preSchedule;
+    				
     			}
-    			console.log($scope.seletedIds);
+    			
+    			console.log("最终的预排列表：")
+    			console.log($scope.prescheduleList);
+    			
+    			
     		}
     		
-    		$scope.delete = function(seletedIds){
-    			if(confirm("你确定要删除吗？")){
-	    			$http.get(URI + table + "deleteByIds?ids=" + $scope.seletedIds).success(function(response){
-	    				if(response){
-	    					$scope.reloadList();
-	    				}else{
-	    					alert("删除失败！")
-	    				}
-	    			});
-    			}
- 
-    		}
     		
+		
     		
     	});
+    	
     	
     	
     </script>
 		
 		
 	</head>
-	<body class="hold-transition skin-red sidebar-mini" ng-app="CourseApp" ng-controller="CourseController">
+	<body class="hold-transition skin-red sidebar-mini" ng-app="ManualScheduleApp" ng-controller="ManualScheduleController" ng-init="findgrade();findAllTeacher();findWeek()">
 		<div class="box-header with-border">
 			<h3 class="box-title">手动预排</h3>
 		</div>
 		
 		<div class="box-body">
-			<div class="table-box">
-				<!--
-                	描述：工具栏
-                	有三个按钮：添加/删除/刷新
-                -->
+			<!--查询栏-->
+            <div class="container center-block">
+			   <div class="row" >
+			      
+			      <div class="col-md-2 col-sm-2">
+			         <span>选择年级：</span>
+			      </div>
+			      <div class="col-md-3 col-sm-3">
+			        <select name="" class="form-control"  ng-model="selectGrade" ng-options="op for op in grade" ng-change="classChange(selectGrade)">
+            			<option value=""></option>
+            		</select>
+			      </div>
+			      
+			      <div class="col-md-2 col-sm-2">
+			         <span>选择班级：</span>
+			      </div>
+			      <div class="col-md-3 col-sm-3">
+			        <select name="" class="form-control"  ng-model="classNum" ng-options="class.classId as class.className for class in classInfo"
+			        		ng-change="classNumChange(classNum)">
+            			<option value=""></option>
+            		</select>
+			      </div>
+			      
+			      <div class="col-md-2 col-sm-2">
+					<input type="submit" value="开始排课" ng-click="selectCurriculum(teacherId)"/>				      	
+			      </div>
+				</div>
+			</div>
+			<!--查询栏-->
+            <br/><br/><br/>
+		</div>
+		<!--box-body1-->
+		
+		<div class="box-body">
+			<!--ng-click="entity = {classId:'',day:'',hour:'',timeId:'',courseName:'',teacherId:''}"-->
+		    <div class="table-box">
                 <div class="pull-left">
                 	<div class="form-group form-inline">
+                		<p class="text-danger">添加预排前请先选择年级和班级，否则会添加失败！</p>
                 		<div class="btn-group">
-                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" ng-click="entity={}">添加</button>
-	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除</button>
+                			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" 
+                					ng-click="entity={}">添加预排</button>
+	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除预排</button>
 	                		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">刷新</button>	
                 		</div>
                 	</div>
                 </div>
                 <!--工具栏-->
 
-				<!--
-                	作者：1521484428@qq.com
-                	时间：2019-10-15
-                	描述：数据表格
-                -->
+				<!--添加预排，删除预排的表格-->
                 <table class="table table-bordered table-striped table-hover	">
                 	<thead>
                 		<tr ng-model="title">
@@ -191,16 +317,14 @@
                 	</thead>
                 	
                 	<tbody>
-                		<tr ng-repeat="row in list">
-                			<!--'courseId', 'classId', 'teacherId', 'courseName', 'courseSort', 'classHour', 'remark'-->
+                		<tr ng-repeat="row in prescheduleList">
                 			<td><input  type="checkbox" ng-click="selectUpdate(row.courseId,$event)"></td>
-                			<td>{{row.courseId}}</td>
+                			<td>{{row.id}}</td>
                 			<td>{{row.classId}}</td>
-                			<td>{{row.teacherId}}</td>
-                			<td>{{row.courseName}}</td>
-                			<td>{{row.courseSort}}</td>
-                			<td>{{row.classHour}}</td>
-                			<td>{{row.remark}}</td>
+                			<td>{{transferWeek[row.day]}}</td>
+                			<td>{{row.hour}}</td>
+                			<td>{{row.remark}}</td><!--课程名-->
+                			<td>{{row.teacherName}}</td>
                 			<td class="text-center">                                           
 		                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#myModal" ng-click="findOne(row)">修改</button>                                           
 		                  </td>
@@ -212,7 +336,79 @@
 			</div>
 			<!--table-box-->
 		</div>
-		<!--box-body-->
+		<!--box-body2-->
+		
+		
+		
+		<div class="box-body">
+			<div class="table-box">
+
+				<!--显示课表的表格-->
+                <table id="schedule" class="table table-bordered ">
+                	<thead>
+                		<tr>
+                			<th>星期  / 时间</th>
+							<th ng-repeat="num in nums" class="thclass">{{num}}</th>
+                		</tr>
+                	</thead>
+                	<tbody id="Tbody">
+                		<tr id="mon">
+                			<th class="thclass">星期一</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                		<tr id="tue">
+                			<th class="thclass">星期二</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                		<tr id="wedn">
+                			<th class="thclass">星期三</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                		<tr id="thu">
+                			<th class="thclass">星期四</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                		<tr id="fir">
+                			<th class="thclass">星期五</th>
+                			<td class="one"></td>
+                			<td class="two"></td>
+                			<td class="three"></td>
+                			<td class="four"></td>
+                			<td class="five"></td>
+                			<td class="six"></td>
+                			<td class="seven"></td>
+                		</tr>
+                	</tbody>
+                </table>
+                <!--数据表格-->
+			</div>
+			<!--table-box-->
+		</div>
+		<!--box-body3-->
 		
 		<!-- 模态框（Modal） -->
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
@@ -221,51 +417,67 @@
 			      <div class="modal-content">
 			        <div class="modal-header">
         		 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-        		 		<h4 class="modal-title" id="myModalLabel">手动预排</h4>
+        		 		<h4 class="modal-title" id="myModalLabel">排课管理</h4>
         		 		<h3 id="myModalLabel">添加课程</h3>
         		 	</div>
         		 	<div class="modal-body">		
 						<table class="table table-bordered table-striped"  width="800px">
-							<tr>
-					      		<td>课程Id</td>
-					      		<td><input  class="form-control" placeholder="课程Id" ng-model="entity.courseId">  </td>
-					      	</tr>
 					      	<tr>
 					      		<td>班级Id</td>
-					      		<td><input  class="form-control" placeholder="班级Id" ng-model="entity.classId">  </td>
+					      		<td ng-model="entity.classId">{{classNum}}</td>
 					      	</tr>
 					      	<tr>
-					      		<td>教师Id</td>
-					      		<td><input  class="form-control" placeholder="教师Id" ng-model="entity.teacherId">  </td>
+					      		<td>星期</td>
+					      		<td>
+					      			<select name="" class="form-control"  ng-model="entity.day" 
+					      				ng-options="transferWeek[day] for day in week"  ng-change="dayChange(entity.day)">
+			                			<option value=""></option>
+			                		</select>
+					      		</td>
 					      	</tr>
 					      	<tr>
-					      		<td>课程名称代码</td>
-					      		<td><input  class="form-control" placeholder="课程名称代码" ng-model="entity.courseName">  </td>
+					      		<td>节数</td>
+					      		<td>
+					      			<select name="" class="form-control"  ng-model="time" 
+					      				ng-options="time.hour for time in timeList"  ng-change="saveTimeToEntity(time)">
+			                			<option value=""></option>
+			                		</select>
+					      		</td>
+					      	</tr>
+					      	<!--<tr>
+					      		<td>节次</td>
+					      		<td ng-model="entity.timeId"></td>
+					      	</tr>-->
+					      	<tr>
+					      		<td>课程</td>
+					      		<!--<td><input  class="form-control" placeholder="课程" ng-model="entity.email">  </td>-->
+					      		<td>
+					      			<select name="" class="form-control"  ng-model="entity.remark" ng-options="course for course in courseList"
+					      				ng-change="findTeacherByCourse(entity.remark)">
+			                			<option value=""></option>
+			                		</select>
+					      		</td>
 					      	</tr>
 					      	<tr>
-					      		<td>课程权重</td>
-					      		<td><input  class="form-control" placeholder="课程权重" ng-model="entity.courseSort">  </td>
+					      		<td>教师</td>
+					      		<td>
+					      			<select name="" class="form-control"  ng-model="teacher" ng-options="teacher.teacherName for teacher in teacherList"
+					      				ng-change="saveTeacherToEntity(teacher)">
+			                			<option value=""></option>
+				                		</select>
+					      		</td>
 					      	</tr>
-					      	<tr>
-					      		<td>学时</td>
-					      		<td><input  class="form-control" placeholder="学时" ng-model="entity.classHour">  </td>
-					      	</tr>
-					      	<tr>
-					      		<td>课程名称</td>
-					      		<td><input  class="form-control" placeholder="课程名称" ng-model="entity.remark">  </td>
-					      	</tr>
+					      	
 						 </table>				
 					</div>
 					<div class="modal-footer">						
-						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="save()">保存</button>
+						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="addPreSchedule(entity)">保存</button>
 						<button class="btn btn-default" data-dismiss="modal" aria-hidden="true" ng-click="changeStatusToAdd()">关闭</button>
 					</div>
         		 </div>
         	</div>
         </div>
         <!--编辑框-->
-		
-		
 	
 		
 	</body>
