@@ -181,61 +181,45 @@
     		$scope.prescheduleList = [];
     		//查询预排课程信息
     		$scope.findByPage = function(pageNo,pageSize,classId){
+    			console.log(pageNo+","+pageSize+","+classId)
     			$http.get(URI + "preschedule/findByPage?pageNo="+pageNo+"&pageSize="+pageSize+"&classId="+classId).success(
     				function(response){
     					$scope.prescheduleList = response.rows;
     					$scope.paginationConf.totalItems = response.total;
     					//动态加载预排课信息到课程表
-    					$scope.loadToTable($scope.prescheduleList);
+//  					$scope.loadToTable($scope.prescheduleList);
+    				}
+    			);
+    		}
+    		
+    		$scope.findAllByPage = function(pageNo,pageSize){
+    			$http.get(URI + "preschedule/findByPage?pageNo="+pageNo+"&pageSize="+pageSize).success(
+    				function(response){
+    					$scope.prescheduleList = response.rows;
+    					$scope.paginationConf.totalItems = response.total;
     				}
     			);
     		}
     		
     		//页面信息发生改变时调用的函数
     		$scope.reloadList = function(){
-    			$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage,$scope.classNum);
-    		}
-    		
-    		//查找指定的课程，填到对应课程表中的位置
-    		$scope.loadToTable = function(list){
-    			//定义空的预排信息
-    			var emptyPreSchedule = 
-									     {
-									      "id": null,
-									      "scheduleId": null,
-									      "classId": null,
-									      "classroomId": null,
-									      "courseId": null,
-									      "teacherId": null,
-									      "timeId": null,
-									      "remark": null,
-									      "className": null,
-									      "place": null,
-									      "courseName": null,
-									      "teacherName": null,
-									      "day": null,
-									      "hour": null
-									    };
-									    
-    			console.log(list);
-    			var k = 1;
-    			for (var i = 0; i < list.length; i++) {
-    				var preSchedule = list[i];
-    				var timeId = preSchedule.timeId;
-    				
-    				console.log(preSchedule.timeId);
-//  				while(k!=timeId){
-//  					$scope.prescheduleList[k-1]=emptyPreSchedule;
-//  					k++;
-//  				}
-//  				$scope.prescheduleList[timeId-1] = preSchedule;
-    				
+    			console.log("typeof:" + typeof $scope.classNum == "undefined");
+    			if(typeof $scope.classNum == "undefined"){
+    				$scope.findAllByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage);
+    			}else{
+    				$scope.findByPage($scope.paginationConf.currentPage,$scope.paginationConf.itemsPerPage,$scope.classNum);
     			}
     			
-    			console.log("最终的预排列表：")
-    			console.log($scope.prescheduleList);
-    			
-    			
+    		}
+    		
+    		
+    		//开始排课
+    		$scope.schedule = function(){
+    			$http.get(URI + "schedule/scheduleCondition").success(
+    				function(response){
+    					alert("排课完成！");
+    				}
+    			);
     		}
     		
     		
@@ -249,7 +233,7 @@
 		
 		
 	</head>
-	<body class="hold-transition skin-red sidebar-mini" ng-app="ManualScheduleApp" ng-controller="ManualScheduleController" ng-init="findgrade();findAllTeacher();findWeek()">
+	<body class="hold-transition skin-red sidebar-mini" ng-app="ManualScheduleApp" ng-controller="ManualScheduleController" ng-init="findgrade();findAllByPage(1,5)">
 		<div class="box-header with-border">
 			<h3 class="box-title">手动预排</h3>
 		</div>
@@ -279,7 +263,7 @@
 			      </div>
 			      
 			      <div class="col-md-2 col-sm-2">
-					<input type="submit" value="开始排课" ng-click="selectCurriculum(teacherId)"/>				      	
+					<input type="submit" value="开始排课" ng-click="schedule()"/>				      	
 			      </div>
 				</div>
 			</div>
@@ -296,7 +280,7 @@
                 		<p class="text-danger">添加预排前请先选择年级和班级，否则会添加失败！</p>
                 		<div class="btn-group">
                 			<button type="button" class="btn btn-default" title="添加" data-toggle="modal" data-target="#myModal" 
-                					ng-click="entity={}">添加预排</button>
+                					ng-init="findAllTeacher();findWeek();" ng-click="entity={};dayChange('');findTeacherByCourse('')">添加预排</button>
 	                		<button type="button" class="btn btn-default" title="删除" ng-click="delete(selectIds)">删除预排</button>
 	                		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">刷新</button>	
                 		</div>
