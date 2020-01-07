@@ -166,12 +166,18 @@
     		}
     		
     		//添加/修改预排课程信息
-    		$scope.addPreSchedule = function(entity){
+    		$scope.addOrUpdatePreSchedule = function(entity){
     			console.log("保存entity：");
     			console.log(entity);
     			$http.post(URI + "preschedule/save",entity).success(
     				function(response){
-    					$scope.reloadList();
+    					$scope.hasList = response;
+//						console.log("hasCourse:");
+//						console.log($scope.hasList.classId);
+						if(typeof $scope.hasList.classId != "undefined"){
+							alert("所选老师在"+$scope.hasList.classId+"班已有课！");
+						}
+						$scope.reloadList();
     				}
     			);
     		}
@@ -268,10 +274,11 @@
     		//------------------------------------------------------------------
     		
     		//开始排课
-    		$scope.schedule = function(){
-    			$http.get(URI + "schedule/scheduleCondition").success(
+    		$scope.schedule = function(grade){
+    			$http.get(URI + "schedule/scheduleCondition?grade="+grade).success(
     				function(response){
     					alert("排课完成！");
+    					$scope.reloadList();
     				}
     			);
     		}
@@ -379,7 +386,7 @@
 		<!--box-body2-->
 		
 		<button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();">查看所有班级的预排信息</button>	
-		<button type="button" class="btn btn-default" title="开始排课" ng-click="schedule();">开始排课</button>
+		<button type="button" class="btn btn-default" title="开始排课" ng-click="schedule(keyword);">开始排课</button>
 		
 		
 		<!--<div class="box-body">
@@ -513,7 +520,7 @@
 						 </table>				
 					</div>
 					<div class="modal-footer">						
-						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="addPreSchedule(entity)">保存</button>
+						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="addOrUpdatePreSchedule(entity)">保存</button>
 						<button class="btn btn-default" data-dismiss="modal" aria-hidden="true" ng-click="changeStatusToAdd()">关闭</button>
 					</div>
         		 </div>
