@@ -18,9 +18,13 @@
 			
     	var app = angular.module("AllClassCurriculumApp",[]);
     	var URI = "http://localhost:8663/lesson/";
-    	app.controller("AllClassCurriculumController",function($scope,$http){		
+    	app.config(['$locationProvider', function($locationProvider) {
+        $locationProvider.html5Mode(true);
+        }]);
+    	app.controller("AllClassCurriculumController",['$scope', '$http', '$location',function($scope, $http, $location){		
     		
     		$scope.nums = [1,2,3,4,5,6,7];
+    		$scope.keyword = $location.search().grade;
     		
     			
     		//查询所有年级课表
@@ -112,7 +116,7 @@
     		
     		
     		
-    	});
+    	}]);
     	
     	
     	
@@ -120,7 +124,7 @@
 		
 		
 	</head>
-	<body class="hold-transition skin-red sidebar-mini" ng-app="AllClassCurriculumApp" ng-controller="AllClassCurriculumController" ng-init="findAllSchedule();findAll()">
+	<body class="hold-transition skin-red sidebar-mini" ng-app="AllClassCurriculumApp" ng-controller="AllClassCurriculumController" ng-init="selectCurriculum(keyword);findAll()">
 		<div class="box-header with-border">
 			<h3 class="box-title">年级课表</h3>
 		</div>

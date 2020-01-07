@@ -161,12 +161,18 @@
     		}
     		
     		//添加/修改预排课程信息
-    		$scope.addPreSchedule = function(entity){
+    		$scope.addOrUpdatePreSchedule = function(entity){
     			console.log("保存entity：");
     			console.log(entity);
     			$http.post(URI + "preschedule/save",entity).success(
     				function(response){
-    					$scope.reloadList();
+    					$scope.hasList = response;
+//						console.log("hasCourse:");
+//						console.log($scope.hasList.classId);
+						if(typeof $scope.hasList.classId != "undefined"){
+							alert("所选老师在"+$scope.hasList.classId+"班已有课！");
+						}
+						$scope.reloadList();
     				}
     			);
     		}
@@ -267,6 +273,7 @@
     			$http.get(URI + "schedule/scheduleCondition").success(
     				function(response){
     					alert("排课完成！");
+    					$scope.reloadList();
     				}
     			);
     		}
@@ -507,7 +514,7 @@
 						 </table>				
 					</div>
 					<div class="modal-footer">						
-						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="addPreSchedule(entity)">保存</button>
+						<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="addOrUpdatePreSchedule(entity)">保存</button>
 						<button class="btn btn-default" data-dismiss="modal" aria-hidden="true" ng-click="changeStatusToAdd()">关闭</button>
 					</div>
         		 </div>
